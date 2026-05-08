@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.pytest_cache/
+.coverage
+.coverage.*
+.tox/
+build/
+dist/
+*.whl
+*.tar.gz
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+.envrc
+.venv/
+venv/
+
+# Local credential storage created by `runvault.auth.credentials.save_credentials`
+# during ad-hoc testing — never commit these.
+.runvault/

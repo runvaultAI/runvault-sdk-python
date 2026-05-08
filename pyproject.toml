@@ -1,0 +1,101 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "runvault"
+version = "0.2.1"
+description = "Financial identity infrastructure for AI agents — Python SDK"
+readme = "README.md"
+# PEP 639 license metadata. The SPDX expression renders as a clean
+# "License: Apache-2.0" line on PyPI and a clickable LICENSE link in the
+# sidebar (rather than embedding the full Apache 2.0 text into the
+# Metadata: License field, which is what license = { file = ... } does).
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [{ name = "RunVault" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    # License classifier intentionally omitted; PEP 639 `license` SPDX
+    # expression above is the source of truth and PyPI now prefers it.
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "httpx>=0.27,<1.0",
+    "cryptography>=42,<50",
+]
+
+[project.urls]
+Homepage      = "https://runvault.to"
+Documentation = "https://github.com/runvaultAI/runvault-sdk-python#readme"
+Repository    = "https://github.com/runvaultAI/runvault-sdk-python"
+Issues        = "https://github.com/runvaultAI/runvault-sdk-python/issues"
+
+[project.optional-dependencies]
+# Raw provider SDKs
+# Lower bounds are pinned only where the SDK relies on a specific API:
+# openai/anthropic both require the `http_client=` constructor kwarg
+# (added in openai 1.0 and anthropic 0.7 respectively). Upper bounds
+# guard against future major-version breakage.
+openai     = ["openai>=1.0,<3"]
+anthropic  = ["anthropic>=0.7,<1"]
+google     = ["google-generativeai>=0.7,<1"]
+
+# LangChain integrations
+# No lower bound on the openai/anthropic LangChain wrappers — we only
+# use stable constructor kwargs (api_key, base_url, http_client) that
+# have been there since the 0.x series. langchain-google-genai must
+# be >=2.0 because we feed it a google.genai.Client; 1.x used the
+# older google-generativeai SDK.
+langchain-openai    = ["langchain-openai<2"]
+langchain-anthropic = ["langchain-anthropic<2"]
+langchain-google    = ["langchain-google-genai>=2.0,<5"]
+
+# Framework adapters
+# We only call .invoke / .ainvoke / .stream / .astream on the compiled
+# graph — stable since langgraph 0.0.x — so no lower bound is needed.
+langgraph = ["langgraph<2"]
+
+# Convenience: everything an end user might want
+all = [
+    "runvault[openai,anthropic,google,langchain-openai,langchain-anthropic,langchain-google,langgraph]",
+]
+
+# SDK development (pytest, build, publish). Not for end users.
+dev = [
+    "pytest>=8.0,<9",
+    "pytest-cov>=6.0,<7",
+    "pytest-asyncio>=0.24,<1",
+    "build>=1.0",
+    "twine>=5.0",
+    "hatchling>=1.21",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/runvault"]
+exclude = ["**/CLAUDE.md"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/runvault",
+    "tests",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
+exclude = ["**/CLAUDE.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
