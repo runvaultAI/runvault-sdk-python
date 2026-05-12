@@ -1,0 +1,42 @@
+site_name: RunVault Python SDK
+site_url: https://docs.runvault.to
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+
+  - Concepts:
+      - Client: api/client.md
+      - Context: api/context.md
+      - Runtime (Agent): api/runtime.md
+
+  - Authentication & Identity:
+      - Auth & Credentials: api/auth.md
+
+  - Networking Layer:
+      - HTTP & Transports: api/http.md
+
+  - Framework Integration:
+      - Adapters: api/adapters.md
