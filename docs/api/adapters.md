@@ -139,12 +139,3 @@ That is the only mutation needed in the rest of the codebase. The `RunVault.init
 
 **Wrapping an existing `Agent` after the fact.** The `Agent` class exposes a `.langgraph(app)` convenience that wraps a graph onto an already-registered `Agent`. It uses the same `wrap_langgraph` function under the hood. This pattern is rarer than the single-call `rv.init(framework=..., app=...)` form but is useful when registration and graph compilation are separated in time.
 
----
-
-## Reference
-
-::: runvault.adapters
-    options:
-      show_source: false
-      show_root_heading: true
-      show_signature: true

@@ -1,0 +1,2042 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.runvault.to/api/auth/">
+      
+      
+        <link rel="prev" href="../runtime/">
+      
+      
+        <link rel="next" href="../http/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.14">
+    
+    
+      
+        <title>Auth & Credentials - RunVault Python SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.fad675c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.356b1318.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#auth" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="RunVault Python SDK" class="md-header__button md-logo" aria-label="RunVault Python SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RunVault Python SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Auth & Credentials
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="RunVault Python SDK" class="md-nav__button md-logo" aria-label="RunVault Python SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    RunVault Python SDK
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quickstart
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../runtime/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Runtime (Agent)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Authentication & Identity
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Authentication & Identity
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Auth & Credentials
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Auth & Credentials
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-package-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this package is
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-problem-it-solves" class="md-nav__link">
+    <span class="md-ellipsis">
+      The problem it solves
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works-internally" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works internally
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works internally">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registration-obtaining-and-recovering-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      registration — obtaining and recovering credentials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials-disk-persistence-and-ca-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      credentials — disk persistence and CA verification
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signer-per-request-eddsa-jwt-minting" class="md-nav__link">
+    <span class="md-ellipsis">
+      signer — per-request EdDSA JWT minting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-developers-use-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      How developers use it
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Registration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.auth.registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      registration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.registration.refresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      refresh
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.registration.register" class="md-nav__link">
+    <span class="md-ellipsis">
+      register
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      Credentials
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.auth.credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      credentials
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="credentials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.credentials.load_credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_credentials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.credentials.save_credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      save_credentials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.credentials.verify_certificate" class="md-nav__link">
+    <span class="md-ellipsis">
+      verify_certificate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Signer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.auth.signer" class="md-nav__link">
+    <span class="md-ellipsis">
+      signer
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="signer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.signer.create_agent_jwt" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_agent_jwt
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Networking Layer
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Networking Layer
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HTTP & Transports
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Framework Integration
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Framework Integration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Adapters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-package-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this package is
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-problem-it-solves" class="md-nav__link">
+    <span class="md-ellipsis">
+      The problem it solves
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works-internally" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works internally
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works internally">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registration-obtaining-and-recovering-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      registration — obtaining and recovering credentials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials-disk-persistence-and-ca-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      credentials — disk persistence and CA verification
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signer-per-request-eddsa-jwt-minting" class="md-nav__link">
+    <span class="md-ellipsis">
+      signer — per-request EdDSA JWT minting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-developers-use-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      How developers use it
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Registration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.auth.registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      registration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.registration.refresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      refresh
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.registration.register" class="md-nav__link">
+    <span class="md-ellipsis">
+      register
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      Credentials
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.auth.credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      credentials
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="credentials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.credentials.load_credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_credentials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.credentials.save_credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      save_credentials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.credentials.verify_certificate" class="md-nav__link">
+    <span class="md-ellipsis">
+      verify_certificate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Signer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.auth.signer" class="md-nav__link">
+    <span class="md-ellipsis">
+      signer
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="signer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.auth.signer.create_agent_jwt" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_agent_jwt
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="auth">Auth<a class="headerlink" href="#auth" title="Permanent link">&para;</a></h1>
+<p>The <code>runvault.auth</code> package implements the cryptographic identity layer that turns a project API key into a per-agent, per-request, verifiable presence on the wire. It is split into three modules — <code>registration</code>, <code>credentials</code>, and <code>signer</code> — that map to the three phases of an agent's lifetime: getting an identity, keeping it on disk, and using it on every outbound call.</p>
+<p>This page explains why the layer is split that way, what each module is responsible for, and where the code that you (the developer) actually call sits inside it. Most of <code>runvault.auth</code> runs silently behind <code>RunVault.init(...)</code> and the provider transports; you only touch it directly for verification, debugging, or when writing tests.</p>
+<hr />
+<h2 id="what-this-package-is">What this package is<a class="headerlink" href="#what-this-package-is" title="Permanent link">&para;</a></h2>
+<p>The package is the SDK side of a two-step PKI flow:</p>
+<ol>
+<li><strong>Registration</strong> turns a long-lived RunVault project API key plus an agent ID into a <em>short-lived</em> Ed25519 keypair and a CA-signed certificate. The keypair lives on the agent's disk; the certificate is what proves to the RunVault proxy that this keypair is allowed to act on behalf of the agent.</li>
+<li><strong>Per-request signing</strong> uses that keypair to mint a fresh EdDSA-signed JWT for every single outbound LLM call. The JWT carries the agent ID, the run ID, a fresh <code>jti</code>, and an <code>exp</code> 5 minutes in the future. The certificate goes along for the ride in a header.</li>
+</ol>
+<p>The three modules implement those phases:</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Phase</th>
+<th>Public symbols</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>runvault.auth.registration</code></td>
+<td>Obtain or recover credentials from the backend.</td>
+<td><code>register</code>, <code>refresh</code>, <code>AgentInfo</code></td>
+</tr>
+<tr>
+<td><code>runvault.auth.credentials</code></td>
+<td>Persist, load, and verify the credentials on disk.</td>
+<td><code>save_credentials</code>, <code>load_credentials</code>, <code>verify_certificate</code></td>
+</tr>
+<tr>
+<td><code>runvault.auth.signer</code></td>
+<td>Mint per-request EdDSA JWTs from the loaded private key.</td>
+<td><code>create_agent_jwt</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="the-problem-it-solves">The problem it solves<a class="headerlink" href="#the-problem-it-solves" title="Permanent link">&para;</a></h2>
+<p>A traditional pattern would give the agent a long-lived API key — either the RunVault key directly, or a bearer token derived from it — and let it call providers on its own. That has three structural failures:</p>
+<ul>
+<li><strong>A leaked key compromises the entire agent's budget forever.</strong> There is no rotation horizon.</li>
+<li><strong>There is no way to scope a single execution.</strong> Spending tracking has to be inferred from request metadata rather than carried in the credential itself.</li>
+<li><strong>Revocation is eventually-consistent at best.</strong> Once a long-lived token is in flight, cancelling it requires the proxy to consult a denylist on every request.</li>
+</ul>
+<p>The RunVault auth package replaces the long-lived bearer model with three short-lived artefacts:</p>
+<ul>
+<li>A <strong>private key</strong>, scoped to one agent, stored locally with <code>0600</code> permissions, never transmitted.</li>
+<li>A <strong>certificate</strong>, signed by the RunVault CA, that asserts "this public key belongs to this agent, in this scope, until this expiry."</li>
+<li>A <strong>per-request JWT</strong>, signed with the private key and valid for five minutes, that links a specific call to a specific run.</li>
+</ul>
+<p>The proxy verifies the CA signature on the certificate (proof of identity), then verifies the JWT signature using the public key inside that certificate (proof of liveness). Nothing the agent sends over the wire is reusable: the JWT expires within minutes, and revoking the certificate disables future signatures within the proxy's cache TTL (≤ 30 seconds).</p>
+<hr />
+<h2 id="how-it-works-internally">How it works internally<a class="headerlink" href="#how-it-works-internally" title="Permanent link">&para;</a></h2>
+<h3 id="registration-obtaining-and-recovering-credentials"><code>registration</code> — obtaining and recovering credentials<a class="headerlink" href="#registration-obtaining-and-recovering-credentials" title="Permanent link">&para;</a></h3>
+<p><code>register(http, api_key, agent_id, name, budget, budget_alert_threshold)</code> is the entry point used by <code>RunVault.init(...)</code>. It performs a single <code>POST /auth/agents/runs</code>, but it has to handle four distinct backend response shapes:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP / code</th>
+<th>Meaning</th>
+<th>What <code>register</code> does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code> with <code>agent_private_key</code> + <code>certificate</code></td>
+<td>First-time registration.</td>
+<td>Verify CA signature (if <code>RV_CA_PUBLIC_KEY</code> is set), persist to disk, return raw bytes.</td>
+</tr>
+<tr>
+<td><code>200</code> without <code>agent_private_key</code></td>
+<td>Idempotent re-registration; backend says "you already have valid credentials."</td>
+<td>Load credentials from disk. If the disk is empty (lost volume), fall back to <code>refresh(...)</code>.</td>
+</tr>
+<tr>
+<td><code>410 CERT_ROTATION_REQUIRED</code></td>
+<td>Admin rotated the certificate.</td>
+<td>Call <code>refresh(...)</code> and return its result.</td>
+</tr>
+<tr>
+<td><code>403 AGENT_SUSPENDED</code></td>
+<td>Admin suspended the agent.</td>
+<td>Raise <code>AgentSuspendedError</code> — no automatic recovery.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>refresh(...)</code> function exists as a peer to <code>register(...)</code> rather than a private helper because the SDK calls it from <strong>two</strong> places: from inside <code>register</code> when the backend reports rotation, and directly from <code>runvault.runtime.agent.Agent.refresh_credentials()</code> when the <strong>proxy</strong> later returns <code>401 CERTIFICATE_REVOKED</code> on a live request. Both call sites hand it the same payload shape, both want the same return value, and both want the same <code>AgentSuspendedError</code> semantics — so it is one function.</p>
+<p><code>AgentInfo</code> is the small dataclass returned alongside the raw key/cert pair. It carries every immutable fact about this run: the agent's DB UUID, the <code>run_id</code> (fresh on every call), the proxy URL, the LLM provider, and the budget caps that scope the run.</p>
+<h3 id="credentials-disk-persistence-and-ca-verification"><code>credentials</code> — disk persistence and CA verification<a class="headerlink" href="#credentials-disk-persistence-and-ca-verification" title="Permanent link">&para;</a></h3>
+<p>The credentials module is responsible for <strong>the only durable, on-disk state the SDK creates.</strong> It lives at <code>~/.runvault/&lt;agent_id&gt;/</code> and contains two files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+<th>Permissions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>private.key</code></td>
+<td>Raw 32-byte Ed25519 private key (binary).</td>
+<td><code>0600</code></td>
+</tr>
+<tr>
+<td><code>certificate.json</code></td>
+<td>The signed certificate dict, JSON-encoded.</td>
+<td><code>0600</code></td>
+</tr>
+</tbody>
+</table>
+<p>The directory itself is <code>0700</code>. These match the convention used by SSH (<code>~/.ssh/id_ed25519</code>) and exist for the same reason: anyone who reads the private key can impersonate the agent, mint JWTs, spend its budget, and sign fraudulent statements. The OS-level permission bit is the last line of defense.</p>
+<p><code>save_credentials(...)</code> writes both files atomically (within the limits of POSIX) and is called only from <code>_persist_fresh_credentials</code> inside <code>registration.py</code>. <code>load_credentials(...)</code> is the lookup used during idempotent re-registration. It returns <code>None</code> (rather than raising) when the files are missing, because callers — especially <code>register()</code> — want to <em>decide</em> whether absence is an error or a signal to call <code>refresh</code>.</p>
+<p><code>verify_certificate(certificate, ca_public_key_b64)</code> is the one credentials function that you might call manually. It performs two checks:</p>
+<ol>
+<li>The certificate's <code>signature</code> field is a valid Ed25519 signature, made by the CA's private key, over the canonical JSON form of the rest of the certificate (<code>json.dumps(payload, sort_keys=True, separators=(",", ":"))</code>).</li>
+<li>The certificate's <code>expires_at</code> is in the future when measured against <code>datetime.now(timezone.utc)</code>.</li>
+</ol>
+<p>Either failure raises <code>CertificateVerificationError</code>. The function is invoked automatically by <code>_persist_fresh_credentials</code> after every registration <strong>when <code>RV_CA_PUBLIC_KEY</code> is set in the environment</strong>. When the variable is absent, registration logs a warning and proceeds without verification — acceptable for local development, never for production.</p>
+<h3 id="signer-per-request-eddsa-jwt-minting"><code>signer</code> — per-request EdDSA JWT minting<a class="headerlink" href="#signer-per-request-eddsa-jwt-minting" title="Permanent link">&para;</a></h3>
+<p><code>create_agent_jwt(agent_id, run_id, private_key_bytes)</code> is the smallest module in the package and the most performance-sensitive: it is called once for <strong>every</strong> outbound LLM request, by the <code>RunVaultProviderTransport</code> in <code>runvault.http.transport</code>.</p>
+<p>The implementation does not use a third-party JWT library. It builds the three base64url segments manually:</p>
+<div class="highlight"><pre><span></span><code>header  = base64url({&quot;alg&quot;:&quot;EdDSA&quot;,&quot;typ&quot;:&quot;JWT&quot;})        # precomputed at module load
+payload = base64url({                                   # fresh on every call
+    &quot;aud&quot;:      &quot;runvault-proxy&quot;,
+    &quot;iat&quot;:      now,
+    &quot;exp&quot;:      now + 300,
+    &quot;jti&quot;:      uuid4(),
+    &quot;agent_id&quot;: &lt;agent UUID&gt;,
+    &quot;run_id&quot;:   &lt;run UUID&gt;,
+})
+sig     = base64url(Ed25519_sign(private_key, header + &quot;.&quot; + payload))
+token   = f&quot;{header}.{payload}.{sig}&quot;
+</code></pre></div>
+<p>Three design choices worth knowing:</p>
+<ul>
+<li><strong>Fixed audience <code>runvault-proxy</code>.</strong> The proxy rejects tokens that don't carry this audience, so a JWT minted for one tenant cannot be replayed against another.</li>
+<li><strong>Five-minute lifetime.</strong> Long enough to survive normal request latency; short enough that a captured token is rapidly useless.</li>
+<li><strong>Fresh <code>jti</code> per call.</strong> Lets the proxy or an auditor de-duplicate requests if needed, and is the right shape for any future replay-protection cache.</li>
+</ul>
+<p>The function is pure: same inputs produce the same <code>header.payload.signature</code> triple within the same second. Callers do not (and must not) cache the output — call it once per outbound request.</p>
+<hr />
+<h2 id="how-developers-use-it">How developers use it<a class="headerlink" href="#how-developers-use-it" title="Permanent link">&para;</a></h2>
+<p>In the vast majority of agent code, you never import from <code>runvault.auth</code> at all. <code>RunVault.init(...)</code> calls <code>register(...)</code>, the transport calls <code>create_agent_jwt(...)</code>, and the runtime <code>Agent.refresh_credentials(...)</code> calls <code>refresh(...)</code>. Three situations bring you to this layer directly:</p>
+<p><strong>Verifying credentials already on disk.</strong> Useful in deployments where you want to confirm the agent's identity is well-formed before it serves traffic:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">runvault.auth.credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_credentials</span><span class="p">,</span> <span class="n">verify_certificate</span>
+
+<span class="n">creds</span> <span class="o">=</span> <span class="n">load_credentials</span><span class="p">(</span><span class="s2">&quot;research-v1&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">creds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;no credentials on disk — register first&quot;</span><span class="p">)</span>
+
+<span class="n">_</span><span class="p">,</span> <span class="n">certificate</span> <span class="o">=</span> <span class="n">creds</span>
+<span class="n">verify_certificate</span><span class="p">(</span><span class="n">certificate</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;RV_CA_PUBLIC_KEY&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;certificate is valid&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Forcing a credential refresh out-of-band.</strong> If your operational runbook calls for rotating credentials on a schedule rather than waiting for the proxy to detect revocation, you can call <code>refresh</code> directly with the same <code>BackendClient</code> the SDK already uses. In practice this is rarely needed — the transport-layer recovery in <code>runvault.http.transport</code> handles rotation transparently.</p>
+<p><strong>Testing.</strong> Both <code>verify_certificate</code> and <code>create_agent_jwt</code> are pure and have no I/O. They are easy to call from unit tests with a fixture keypair to validate that your downstream code accepts the credentials shape correctly.</p>
+<p>In all three cases, treat the private key bytes returned by <code>load_credentials</code> as you would treat any other private key: never log it, never serialize it across a process boundary, never check it into version control.</p>
+<hr />
+<h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h2>
+<h3 id="registration">Registration<a class="headerlink" href="#registration" title="Permanent link">&para;</a></h3>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="runvault.auth.registration" class="doc doc-heading">
+          <code>runvault.auth.registration</code>
+
+
+<a href="#runvault.auth.registration" class="headerlink" title="Permanent link">&para;</a></h2>
+
+  <div class="doc doc-contents first">
+  
+      <p>Agent registration — POST /auth/agents/runs and /credentials/refresh.</p>
+<p>This module implements the SDK-side recovery dance described in
+<code>be/app/routers/agent_auth.py</code>. The backend's <code>init()</code> is idempotent on
+certificate state, so the SDK has to handle four distinct response shapes:</p>
+<pre><code>HTTP / Code                       Meaning              SDK action
+────────────────────────────      ───────────────      ───────────────────
+200, private_key+cert in body     first registration    save creds, return
+200, no private_key in body       re-registration       load creds from disk
+410 CERT_ROTATION_REQUIRED        cert was rotated      call /refresh
+403 AGENT_SUSPENDED               admin suspended       raise AgentSuspendedError
+</code></pre>
+<p>The <code>register()</code> function below collapses all four into a single
+"give me usable credentials" call from the caller's perspective.</p>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="runvault.auth.registration.refresh" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">refresh</span><span class="p">(</span><span class="n">http</span><span class="p">,</span> <span class="n">api_key</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">budget</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">budget_alert_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#runvault.auth.registration.refresh" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Mint fresh credentials for an existing agent.</p>
+<p>Calls <code>POST /auth/agents/credentials/refresh</code>. The backend ALWAYS
+returns a fresh keypair + cert if the agent is reachable and active;
+otherwise it raises:</p>
+<ul>
+<li><code>AgentSuspendedError</code> (403) — admin has suspended the agent.</li>
+<li><code>RegistrationError</code> with code AGENT_NOT_FOUND (404) — agent
+    doesn't exist; caller should fall back to <code>register()</code>.</li>
+</ul>
+<p>Used directly by <code>RunVaultProviderTransport</code> when the proxy returns
+401 CERTIFICATE_REVOKED, and indirectly by <code>register()</code> when the
+backend returns 410 CERT_ROTATION_REQUIRED.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="runvault.auth.registration.register" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">register</span><span class="p">(</span><span class="n">http</span><span class="p">,</span> <span class="n">api_key</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">budget</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">budget_alert_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#runvault.auth.registration.register" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Register or recover credentials for an agent.</p>
+<p>On success returns <code>(AgentInfo, private_key_bytes, certificate)</code>. The
+credentials are guaranteed to be valid for the proxy at the moment this
+call returns; if the on-disk cert is stale the function transparently
+calls <code>/auth/agents/credentials/refresh</code> to mint fresh ones.</p>
+
+
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="runvault.exceptions.AgentSuspendedError" href="../exceptions/#runvault.exceptions.AgentSuspendedError">AgentSuspendedError</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>backend returned 403; admin must reactivate.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="runvault.exceptions.RegistrationError" href="../exceptions/#runvault.exceptions.RegistrationError">RegistrationError</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>any other backend failure (network, 5xx, etc.).</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div><h3 id="credentials">Credentials<a class="headerlink" href="#credentials" title="Permanent link">&para;</a></h3>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="runvault.auth.credentials" class="doc doc-heading">
+          <code>runvault.auth.credentials</code>
+
+
+<a href="#runvault.auth.credentials" class="headerlink" title="Permanent link">&para;</a></h2>
+
+  <div class="doc doc-contents first">
+  
+      <p>Credential storage and verification for RunVault agents.</p>
+
+<details class="files-are-written-to" open>
+  <summary>Files are written to</summary>
+  <p>~/.runvault/<agent_id>/
+    private.key       raw 32-byte Ed25519 private key (binary)
+    certificate.json  signed RunVault certificate (JSON text)</p>
+</details>      <p>~/ resolves to $HOME at call time via Path.home(), so the location is
+correct whether the agent runs on a developer laptop or inside Docker
+(where HOME=/home/appuser is set explicitly in docker-compose.yml).</p>
+
+<details class="permissions" open>
+  <summary>Permissions</summary>
+  <p>directory  0700 — only the owner can enter it
+files      0600 — only the owner can read or write</p>
+</details>      <p>Why 0600 and not world-readable?
+    The private key is a long-lived secret. Anyone who reads it can
+    impersonate this agent — forge JWTs, make LLM calls on its budget,
+    and sign fraudulent certificates. 0600 ensures the OS enforces that
+    only the user account running the agent can access the file.
+    This mirrors the convention used by SSH (~/.ssh/id_ed25519 is 0600).</p>
+<p>Re-registration overwrites existing files. This is intentional — a new
+registration issues a fresh keypair, making the old private key useless.
+The old certificate is also replaced. Any in-flight requests using the
+old certificate will continue to work until that certificate expires.</p>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="runvault.auth.credentials.load_credentials" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">load_credentials</span><span class="p">(</span><span class="n">agent_id</span><span class="p">)</span></code>
+
+<a href="#runvault.auth.credentials.load_credentials" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Load the agent's private key and certificate from disk.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>agent_id</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>External agent ID string — must match what was used in save.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>tuple[bytes, dict] | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>(private_key_bytes, certificate_dict) if both files exist, else None.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+                <code>tuple[bytes, dict] | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Returns None (not raises) when files are absent — callers decide</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+                <code>tuple[bytes, dict] | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>whether a missing credential is an error.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="runvault.auth.credentials.save_credentials" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">save_credentials</span><span class="p">(</span><span class="n">agent_id</span><span class="p">,</span> <span class="n">private_key_b64</span><span class="p">,</span> <span class="n">certificate</span><span class="p">)</span></code>
+
+<a href="#runvault.auth.credentials.save_credentials" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Save the agent's private key and certificate to disk.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>agent_id</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>External agent ID string (e.g. "research-v1").
+             Used as the directory name — must be filesystem-safe.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>private_key_b64</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Base64-encoded raw 32-byte Ed25519 private key,
+             as returned by the backend registration response.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>certificate</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Signed certificate dict, as returned by the backend.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>OSError</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>If the directory cannot be created or files cannot be written
+     (e.g. read-only filesystem, permission denied).</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="runvault.auth.credentials.verify_certificate" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">verify_certificate</span><span class="p">(</span><span class="n">certificate</span><span class="p">,</span> <span class="n">ca_public_key_b64</span><span class="p">)</span></code>
+
+<a href="#runvault.auth.credentials.verify_certificate" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Verify a RunVault certificate against the CA public key.</p>
+
+<details class="checks-two-things" open>
+  <summary>Checks two things</summary>
+  <ol>
+<li>CA signature — proves RunVault issued this certificate and it has not
+   been tampered with. Fails if RunVault has rotated its CA keys since
+   this certificate was issued.</li>
+<li>Expiry — the certificate's expires_at must be in the future.</li>
+</ol>
+</details>      <p>This function is called automatically by the SDK after every registration
+to confirm the backend returned a genuinely CA-signed certificate. It can
+also be called manually to check credentials already stored on disk.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>certificate</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The certificate dict (as returned by the backend or
+              loaded from ~/.runvault/<agent_id>/certificate.json).</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ca_public_key_b64</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Base64-encoded 32-byte Ed25519 CA public key.
+               Use the value of the RV_CA_PUBLIC_KEY environment
+               variable from your RunVault deployment.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>CertificateVerificationError</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Signature is invalid or certificate has expired.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+                <code>ValueError</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>ca_public_key_b64 is not valid base64 or wrong key length.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+      <p>Example — verify credentials stored on disk::</p>
+<pre><code>from runvault.auth.credentials import load_credentials, verify_certificate
+import os
+
+creds = load_credentials("my-agent")
+if creds:
+    _, cert = creds
+    verify_certificate(cert, os.environ["RV_CA_PUBLIC_KEY"])
+    print("Certificate is valid")
+</code></pre>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div><h3 id="signer">Signer<a class="headerlink" href="#signer" title="Permanent link">&para;</a></h3>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="runvault.auth.signer" class="doc doc-heading">
+          <code>runvault.auth.signer</code>
+
+
+<a href="#runvault.auth.signer" class="headerlink" title="Permanent link">&para;</a></h2>
+
+  <div class="doc doc-contents first">
+  
+      <p>Agent JWT signer — EdDSA-signed short-lived tokens for proxy authentication.</p>
+<p>Produces a JWT signed with the agent's Ed25519 private key. The proxy will
+verify this JWT using the agent's public key extracted from the certificate.</p>
+
+<details class="why-we-build-the-jwt-manually-instead-of-using-a-library" open>
+  <summary>Why we build the JWT manually instead of using a library</summary>
+  <p>The agent environment is kept lean. Adding python-jose or PyJWT just for
+Ed25519 support pulls in transitive dependencies. The JWT format is a
+simple three-part base64url string — straightforward to build correctly
+with the standard library + cryptography (already required for the key).</p>
+</details>
+<details class="jwt-structure" open>
+  <summary>JWT structure</summary>
+  <p>header  = base64url({"alg":"EdDSA","typ":"JWT"})
+payload = base64url({claims...})
+sig     = base64url(Ed25519_sign(private_key, header + "." + payload))
+token   = header + "." + payload + "." + sig</p>
+</details>
+<details class="claims" open>
+  <summary>Claims</summary>
+  <p>aud       "runvault-proxy"   — proxy rejects tokens not meant for it
+iat       Unix timestamp     — issued at
+exp       iat + 300          — expires in 5 minutes
+jti       UUID               — unique token ID (for revocation if needed)
+agent_id  DB UUID string     — identifies the agent
+run_id    UUID string        — links this request to the current run</p>
+</details>
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="runvault.auth.signer.create_agent_jwt" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">create_agent_jwt</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">private_key_bytes</span><span class="p">)</span></code>
+
+<a href="#runvault.auth.signer.create_agent_jwt" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Create a short-lived JWT signed with the agent's Ed25519 private key.</p>
+<p>A new token with a fresh jti and iat/exp is created on every call.
+Call this immediately before each LLM request — do not cache the result.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>agent_id</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Agent DB UUID as a string.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_id</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Current run UUID as a string.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>private_key_bytes</code></td>
+          <td>
+                <code>bytes</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Raw 32-byte Ed25519 private key loaded from disk.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Compact JWT string: "<header>.<payload>.<signature>"</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.tracking", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.cd18aaf1.min.js"></script>
+      
+    
+  </body>
+</html>
