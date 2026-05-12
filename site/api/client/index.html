@@ -1,0 +1,1385 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.runvault.to/api/client/">
+      
+      
+        <link rel="prev" href="../../getting-started/quickstart/">
+      
+      
+        <link rel="next" href="../context/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.14">
+    
+    
+      
+        <title>Client - RunVault Python SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.fad675c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.356b1318.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#client" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="RunVault Python SDK" class="md-header__button md-logo" aria-label="RunVault Python SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RunVault Python SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Client
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="RunVault Python SDK" class="md-nav__button md-logo" aria-label="RunVault Python SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    RunVault Python SDK
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quickstart
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Client
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Client
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-module-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this module is
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-problem-it-solves" class="md-nav__link">
+    <span class="md-ellipsis">
+      The problem it solves
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works-internally" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works internally
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works internally">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Construction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initframework-app-agent_id-name-budgetnone-budget_alert_thresholdnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      init(framework, app, agent_id, name, budget=None, budget_alert_threshold=None)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Idempotency
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#errors-that-surface-from-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      Errors that surface from init
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-developers-use-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      How developers use it
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.client.RunVault" class="md-nav__link">
+    <span class="md-ellipsis">
+      RunVault
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RunVault">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.client.RunVault.init" class="md-nav__link">
+    <span class="md-ellipsis">
+      init
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Context
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../runtime/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Runtime (Agent)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Authentication & Identity
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Authentication & Identity
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Auth & Credentials
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Networking Layer
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Networking Layer
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HTTP & Transports
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Framework Integration
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Framework Integration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Adapters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-module-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this module is
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-problem-it-solves" class="md-nav__link">
+    <span class="md-ellipsis">
+      The problem it solves
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works-internally" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works internally
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works internally">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#construction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Construction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initframework-app-agent_id-name-budgetnone-budget_alert_thresholdnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      init(framework, app, agent_id, name, budget=None, budget_alert_threshold=None)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Idempotency
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#errors-that-surface-from-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      Errors that surface from init
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-developers-use-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      How developers use it
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runvault.client.RunVault" class="md-nav__link">
+    <span class="md-ellipsis">
+      RunVault
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RunVault">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runvault.client.RunVault.init" class="md-nav__link">
+    <span class="md-ellipsis">
+      init
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="client">Client<a class="headerlink" href="#client" title="Permanent link">&para;</a></h1>
+<p>The <code>runvault.client</code> module exposes a single class — <code>RunVault</code> — and that class is the only entry point you ever import to start using the SDK. Everything else in <code>runvault.*</code> exists to support what happens inside one call to <code>RunVault.init(...)</code>.</p>
+<p>This page explains what the class is, what it is <strong>not</strong>, what each of its methods does internally, and how you are expected to use it from your own code.</p>
+<hr />
+<h2 id="what-this-module-is">What this module is<a class="headerlink" href="#what-this-module-is" title="Permanent link">&para;</a></h2>
+<p><code>RunVault</code> is a thin coordinator. It holds two pieces of state — your project API key and your backend's base URL — and it knows how to combine them with a framework name and a compiled application object to produce a fully wired <code>Agent</code>.</p>
+<p>It does <strong>not</strong>:</p>
+<ul>
+<li>read environment variables on your behalf (you pass <code>api_key</code> and <code>be_url</code> explicitly),</li>
+<li>cache or pool agents (each <code>init(...)</code> call yields a fresh <code>Agent</code> bound to a fresh <code>run_id</code>),</li>
+<li>own an event loop, retry policy, or background task,</li>
+<li>do any network I/O at construction time.</li>
+</ul>
+<p>The class is therefore safe to construct at module import: nothing happens on the wire until you call <code>init(...)</code>.</p>
+<hr />
+<h2 id="the-problem-it-solves">The problem it solves<a class="headerlink" href="#the-problem-it-solves" title="Permanent link">&para;</a></h2>
+<p>A RunVault-aware agent has to do four things before its first LLM call can succeed:</p>
+<ol>
+<li>Authenticate to the backend with the project API key.</li>
+<li>Register itself as an agent (and obtain a stable identity + a per-run <code>run_id</code>).</li>
+<li>Receive an Ed25519 keypair and a CA-signed certificate, persist them with safe filesystem permissions, and verify the certificate against the deployment's CA public key.</li>
+<li>Make sure that the agent's identity is present in the <code>ContextVar</code> for the rest of the SDK to read, <em>for every code path inside the framework graph</em> — without the developer having to thread an <code>Agent</code> object through every node, every tool function, every LLM constructor.</li>
+</ol>
+<p>Doing any of these incorrectly produces failures that are subtle, intermittent, and security-sensitive (forged JWTs, leaked private keys, missing run scoping, runaway spend). The <code>RunVault</code> class collapses all four into a single named method — <code>init</code> — so that there is exactly one correct way to start an agent. If <code>init</code> returns, you have a usable <code>Agent</code>. If it raises, none of the partial state escapes.</p>
+<hr />
+<h2 id="how-it-works-internally">How it works internally<a class="headerlink" href="#how-it-works-internally" title="Permanent link">&para;</a></h2>
+<h3 id="construction">Construction<a class="headerlink" href="#construction" title="Permanent link">&para;</a></h3>
+<p><code>RunVault(api_key, be_url, timeout=10)</code> stores the API key on the instance and constructs a <code>BackendClient</code> (see <a href="../http/">HTTP</a>) configured with the supplied base URL and timeout. Both arguments are required positional-keyword: there is no default backend.</p>
+<p><code>timeout</code> is forwarded to <code>BackendClient</code> and applies to the <em>connect</em>, <em>write</em>, and <em>pool</em> phases of every backend request. The <em>read</em> phase is intentionally left unbounded, because a small number of backend operations can take seconds.</p>
+<p>Construction performs no network calls, so any backend reachability problem will surface on the first call to <code>init(...)</code> — never at import time.</p>
+<h3 id="initframework-app-agent_id-name-budgetnone-budget_alert_thresholdnone"><code>init(framework, app, agent_id, name, budget=None, budget_alert_threshold=None)</code><a class="headerlink" href="#initframework-app-agent_id-name-budgetnone-budget_alert_thresholdnone" title="Permanent link">&para;</a></h3>
+<p><code>init</code> is the only public method besides <code>__init__</code>. It performs three steps in order, and short-circuits on the first one that fails.</p>
+<p><strong>1. Resolve the framework adapter.</strong>
+The <code>framework</code> string is looked up in the <code>runvault.adapters.ADAPTERS</code> dict, which maps framework names to their <code>wrap_*</code> functions. If the name is not present, <code>init</code> raises <code>ValueError</code> immediately — before any network call — with a message that lists the supported frameworks. No agent is registered, no credentials are minted, no on-disk state changes.</p>
+<p><strong>2. Register the agent.</strong>
+<code>init</code> then calls the internal <code>_register_agent(...)</code> helper, which delegates to <code>runvault.auth.registration.register(...)</code>. That function is responsible for the actual <code>POST /auth/agents/runs</code> round-trip and for handling the four distinct response shapes the backend may return (fresh registration, idempotent re-registration, certificate rotation, suspension). It returns <code>(AgentInfo, private_key_bytes, certificate_dict)</code>.</p>
+<p><code>_register_agent</code> then constructs an <code>Agent</code> from those return values. The <code>Agent</code> is given more than just the <code>AgentInfo</code>: it also receives the project API key, the original <code>agent_id</code> string, and the <code>name</code>, because the <code>Agent</code> itself may need to call <code>/auth/agents/credentials/refresh</code> later (when the proxy reports <code>CERTIFICATE_REVOKED</code>), and that endpoint takes the same payload shape as registration.</p>
+<p><code>_register_agent</code> is deliberately private. It is currently marked as not part of the public API in v1 — callers are expected to go through <code>init</code>.</p>
+<p><strong>3. Bind the framework adapter.</strong>
+With an <code>Agent</code> in hand, <code>init</code> invokes the resolved <code>wrap</code> function, passing it both the <code>Agent</code> and your <code>app</code>. The <code>wrap</code> function does not return anything: it <strong>mutates the <code>Agent</code> in place</strong> by calling <code>agent._bind_adapter(...)</code> with a framework-specific wrapper object. After this call, <code>agent.invoke(...)</code>, <code>agent.stream(...)</code>, <code>agent.ainvoke(...)</code>, and <code>agent.astream(...)</code> are all wired to delegate through the adapter, which sets the <code>_current_agent</code> <code>ContextVar</code> for the duration of each invocation.</p>
+<p><code>init</code> then returns the now-bound <code>Agent</code>.</p>
+<h3 id="idempotency">Idempotency<a class="headerlink" href="#idempotency" title="Permanent link">&para;</a></h3>
+<p>Two calls to <code>init</code> with the same <code>agent_id</code> will return two different <code>Agent</code> instances backed by the <strong>same</strong> durable agent identity (same DB row, same long-lived <code>agent.info.id</code>) but with <strong>different</strong> <code>run_id</code>s. The <code>run_id</code> is what scopes spend tracking, so each call represents a logically separate execution even if the agent identity is the same.</p>
+<p>This matters in two common situations:</p>
+<ul>
+<li>A long-running process restarts. The on-disk credentials in <code>~/.runvault/&lt;agent_id&gt;/</code> are reused; only the <code>run_id</code> and the live JWT mint cycle restart.</li>
+<li>An ephemeral worker spins up to handle one task. It registers, runs, exits — the next worker registers again under the same <code>agent_id</code> and gets a fresh <code>run_id</code>.</li>
+</ul>
+<h3 id="errors-that-surface-from-init">Errors that surface from <code>init</code><a class="headerlink" href="#errors-that-surface-from-init" title="Permanent link">&para;</a></h3>
+<p><code>init</code> itself only raises <code>ValueError</code> directly, and only for an unknown framework name. Every other failure mode bubbles up from the calls underneath it:</p>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>Raises</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_register_agent</code> → <code>register(...)</code></td>
+<td><code>RegistrationError</code></td>
+<td>Backend rejected the request (network, 5xx, validation).</td>
+</tr>
+<tr>
+<td><code>_register_agent</code> → <code>register(...)</code></td>
+<td><code>AgentSuspendedError</code></td>
+<td>An administrator has suspended this agent. The SDK will not retry.</td>
+</tr>
+<tr>
+<td><code>_register_agent</code> → <code>register(...)</code></td>
+<td><code>CertificateVerificationError</code></td>
+<td><code>RV_CA_PUBLIC_KEY</code> is set and the returned certificate failed CA-signature or expiry checks.</td>
+</tr>
+<tr>
+<td><code>wrap(agent, app)</code></td>
+<td>Framework-specific</td>
+<td>The adapter rejected <code>app</code> (e.g. not a compiled graph).</td>
+</tr>
+</tbody>
+</table>
+<p>These types are documented on the <a href="../exceptions/">Exceptions</a> page.</p>
+<hr />
+<h2 id="how-developers-use-it">How developers use it<a class="headerlink" href="#how-developers-use-it" title="Permanent link">&para;</a></h2>
+<p>The intended pattern is <strong>one <code>RunVault</code> per process, one <code>init</code> per agent</strong>. Both are usually done at startup.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">runvault</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunVault</span><span class="p">,</span> <span class="n">ChatOpenAI</span>
+
+<span class="n">rv</span> <span class="o">=</span> <span class="n">RunVault</span><span class="p">(</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;rv_live_...&quot;</span><span class="p">,</span>
+    <span class="n">be_url</span><span class="o">=</span><span class="s2">&quot;https://your-runvault-backend&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">)</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="n">llm</span><span class="p">)</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
+    <span class="n">framework</span><span class="o">=</span><span class="s2">&quot;langgraph&quot;</span><span class="p">,</span>
+    <span class="n">app</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span>
+    <span class="n">agent_id</span><span class="o">=</span><span class="s2">&quot;research-v1&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Research Agent&quot;</span><span class="p">,</span>
+    <span class="n">budget</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">budget_alert_threshold</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">invoke</span><span class="p">({</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">})</span>
+</code></pre></div>
+<p>A few practical notes that follow directly from the implementation:</p>
+<ul>
+<li><strong>Construct <code>RunVault</code> once.</strong> A second instance would only duplicate the underlying <code>BackendClient</code>. There is no shared cache or pool that benefits from sharing.</li>
+<li><strong>Construct <code>ChatOpenAI</code> (and other LLM clients) before <code>init</code> if you like.</strong> The provider transports look up the active <code>Agent</code> from the <code>ContextVar</code> at request time, not at construction time. Module-level LLM instances are fine.</li>
+<li><strong>Pass <code>budget</code> only when you want a hard cap.</strong> Omitting the argument means the backend's project-level rules apply. Setting it scopes the cap to this run.</li>
+<li><strong><code>init</code> is the right method to retry.</strong> If the network is flaky, retry the whole <code>init(...)</code> call rather than poking at <code>_register_agent</code> — the framework binding step needs to happen on the <code>Agent</code> instance that the retry produced.</li>
+</ul>
+<hr />
+<h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="runvault.client.RunVault" class="doc doc-heading">
+          <code>runvault.client.RunVault</code>
+
+
+<a href="#runvault.client.RunVault" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents first">
+
+  
+      <p>RunVault SDK client.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>api_key</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Active RunVault project API key (rv_live_…). Always required.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>be_url</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Base URL of the RunVault backend. Always required.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>timeout</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>HTTP request timeout in seconds for backend calls.</p>
+            </div>
+          </td>
+          <td>
+                <code>10</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="runvault.client.RunVault.init" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">init</span><span class="p">(</span><span class="n">framework</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">budget</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">budget_alert_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#runvault.client.RunVault.init" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Register an agent and wrap a framework graph in one call.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>framework</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Framework name (e.g. "langgraph").</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>app</code></td>
+          <td>
+                <code><span title="typing.Any">Any</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Compiled graph or runnable to wrap.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>agent_id</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Stable identifier for this agent.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Human-readable name.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>budget</code></td>
+          <td>
+                <code>float | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Optional spending cap in USD.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>budget_alert_threshold</code></td>
+          <td>
+                <code>float | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Optional alert percentage (0–100).</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="runvault.runtime.agent.Agent" href="../runtime/#runvault.runtime.Agent">Agent</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Agent ready to invoke.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>ValueError</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>If the framework is not supported.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.tracking", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.cd18aaf1.min.js"></script>
+      
+    
+  </body>
+</html>
