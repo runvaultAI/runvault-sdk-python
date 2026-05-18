@@ -1,0 +1,65 @@
+site_name: RunVault Python SDK
+site_url: https://docs.runvault.to
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.details
+
+nav:
+  - Home: index.md
+
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+
+  - Concepts:
+      - Client: api/client.md
+      - Context: api/context.md
+      - Runtime (Agent): api/runtime.md
+
+  - Authentication & Identity:
+      - Auth & Credentials: api/auth.md
+
+  - Networking Layer:
+      - HTTP & Transports: api/http.md
+
+  - Framework Integration:
+      - Adapters: api/adapters.md
