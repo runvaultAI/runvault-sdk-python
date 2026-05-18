@@ -11,67 +11,57 @@ Website: <https://runvault.to>
 
 ## What is RunVault?
 
-RunVault gives AI agents a verifiable identity, a budget, and a way to spend it. Each agent registers once with the RunVault platform and is issued a short-lived cryptographic certificate. From then on, every LLM call the agent makes flows through the RunVault proxy, which verifies the agent's identity, checks its remaining budget, forwards the request to the underlying provider (OpenAI / Anthropic / Google / …), and records the cost — all without the agent ever holding a long-lived provider API key.
+RunVault gives each AI agent a verifiable cryptographic identity, a budget, and a way to spend it. An agent registers once with the RunVault platform and receives a short-lived, CA-signed certificate plus an Ed25519 keypair. Every LLM call the agent makes is signed with a fresh EdDSA JWT and routed through the RunVault proxy, which checks the certificate, enforces the budget, forwards the request to the underlying provider (OpenAI, Anthropic, Google, …), and records the cost.
 
-**For platform operators** this means: real per-agent spending caps, per-call audit, instant revocation, and BYOK provider keys that never leave the backend.
+The agent never holds a long-lived provider API key. The platform sees every call, can revoke the agent instantly, and bills exactly what was spent.
 
-**For agent authors** it means: change the import line, get a JWT, keep building.
+---
 
 ## What is this package?
 
-`runvault` is the Python SDK that AI agents use to integrate with the platform. It handles:
+`runvault` is the Python SDK that an agent imports to integrate with the platform. It is built around three primitives:
 
-- **Registration** — `rv.init(...)` registers your agent with the platform using your project API key and receives back an Ed25519 keypair and a CA-signed certificate that authenticates the agent to the proxy.
-- **Per-request signing** — every outbound LLM call is signed with a fresh short-lived EdDSA JWT minted by the SDK (no replay window, no shared secrets in transit).
-- **Drop-in LLM clients** — `ChatOpenAI`, `ChatAnthropic`, `ChatGoogleGenerativeAI`, etc. that route through the RunVault proxy with no other code change.
-- **Framework adapters** — wrap a compiled LangGraph graph and the SDK propagates agent context to every node automatically.
-- **Recovery flows** — auto-fall-back to `/credentials/refresh` when the admin rotates an agent's certificate, with one transparent retry on the in-flight request.
+| Primitive | Lifetime | What it does |
+|---|---|---|
+| **`RunVault`** | per process | Holds the project API key. Registers agents. |
+| **`Identity`** | per agent | Holds the Ed25519 key + CA-signed certificate. Builds LLM clients. Opens runs. |
+| **`Run`** | per execution | A `ContextVar`-scoped block that tags every outbound call with a fresh `run_id`. |
+
+Core is framework-agnostic — `pip install runvault` is enough to call the proxy from your own code. Framework support (LangChain, LangGraph, CrewAI, …) is opt-in via extras. The SDK never wraps the framework's runner; it only wires the LLM.
 
 ---
 
 ## Install
 
-The base package is small. LLM provider support is opt-in via extras:
-
 ```bash
-pip install runvault                                # SDK only
-pip install runvault[openai]                        # OpenAI raw client
-pip install runvault[anthropic]                     # Anthropic raw client
-pip install runvault[langgraph,langchain-openai]    # LangGraph + LangChain OpenAI
-pip install runvault[all]                           # everything
+pip install runvault                     # core SDK
+pip install "runvault[langchain-openai]" # + LangChain ChatOpenAI wiring
+pip install "runvault[crewai]"           # + CrewAI BaseLLM wiring
+pip install "runvault[all]"              # everything
 ```
 
-Available extras: `openai`, `anthropic`, `google`, `langchain-openai`, `langchain-anthropic`, `langchain-google`, `langgraph`, `all`.
-
-Requires **Python 3.9+**.
+Requires **Python 3.9+**. Full matrix on [Installation](getting-started/installation.md).
 
 ---
 
 ## A first look
 
 ```python
-from runvault import RunVault, ChatOpenAI
+from runvault import RunVault
+from langchain_openai import ChatOpenAI
 
-rv = RunVault(
-    api_key="rv_live_...",
-    be_url="https://your-runvault-backend",
-)
+rv = RunVault(api_key="rv_live_...", be_url="https://your-runvault-backend")
 
-llm = ChatOpenAI(model="gpt-4o-mini")
-graph = build_graph(llm)
+identity = rv.register_agent(agent_id="research-v1", name="Research Agent")
+RVChat = identity.build_llm(ChatOpenAI)
+llm = RVChat(model="gpt-4o-mini")
 
-agent = rv.init(
-    framework="langgraph",
-    app=graph,
-    agent_id="research-v1",
-    name="Research Agent",
-    budget=1.0,
-)
-
-result = agent.invoke({"input": "What is...?"})
+with identity.run():
+    answer = llm.invoke("What is the capital of France?")
+    print(answer.content)
 ```
 
-Three RunVault-specific lines — the `RunVault(...)` constructor, the `ChatOpenAI` import, and the `rv.init(...)` call — give your agent a verifiable identity, a $1 spending cap, and a full audit trail. The rest is your existing code.
+Four lines of RunVault-specific code give your agent a verifiable identity, a spending cap that the proxy enforces, and a full audit trail. Your graph code, your prompts, and your provider SDKs stay unchanged.
 
 [Get started](getting-started/quickstart.md){ .md-button .md-button--primary }
 [Install](getting-started/installation.md){ .md-button }
@@ -82,41 +72,41 @@ Three RunVault-specific lines — the `RunVault(...)` constructor, the `ChatOpen
 
 <div class="grid cards" markdown>
 
--   **[Client](api/client.md)**
+-   **[Quickstart](getting-started/quickstart.md)**
 
     ---
 
-    The `RunVault` entry point and what its `init(...)` method does step by step.
+    Register an agent and route your first call through the proxy in under twenty lines.
 
--   **[Context](api/context.md)**
-
-    ---
-
-    How the active `Agent` is made available everywhere without parameter threading.
-
--   **[Runtime](api/runtime.md)**
+-   **[LLM Clients](guides/llm-clients.md)**
 
     ---
 
-    The `Agent` object returned by `init` and how it refreshes credentials in flight.
+    `identity.build_llm(...)` for LangChain, OpenAI, Anthropic, Google, and CrewAI.
 
--   **[Auth & Credentials](api/auth.md)**
-
-    ---
-
-    Registration, on-disk credential storage, CA verification, and JWT signing.
-
--   **[HTTP & Transports](api/http.md)**
+-   **[Frameworks: LangGraph](guides/frameworks-langgraph.md)**
 
     ---
 
-    The typed backend client and the per-request signing transport.
+    Drop a wired LLM into any LangGraph node — no graph wrapping required.
 
--   **[Adapters](api/adapters.md)**
+-   **[Authentication](guides/authentication.md)**
 
     ---
 
-    The framework extension point and a walk-through of the LangGraph adapter.
+    The PKI flow: certificates, EdDSA JWTs, and how credentials rotate automatically.
+
+-   **[Credential Rotation](guides/credential-rotation.md)**
+
+    ---
+
+    How the SDK refreshes credentials transparently on `401 CERTIFICATE_REVOKED`.
+
+-   **[Configuration](guides/configuration.md)**
+
+    ---
+
+    Parameters, environment variables, and the cross-identity guard.
 
 </div>
 

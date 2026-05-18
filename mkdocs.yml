@@ -50,16 +50,20 @@ nav:
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
 
-  - Concepts:
-      - Client: api/client.md
-      - Context: api/context.md
-      - Runtime (Agent): api/runtime.md
+  - Guides:
+      - LLM Clients: guides/llm-clients.md
+      - LangGraph: guides/frameworks-langgraph.md
+      - Authentication: guides/authentication.md
+      - Credential Rotation: guides/credential-rotation.md
+      - Budgets & Alerts: guides/budgets-and-alerts.md
+      - Configuration: guides/configuration.md
 
-  - Authentication & Identity:
-      - Auth & Credentials: api/auth.md
+  - API Reference:
+      - RunVault: api/client.md
+      - Identity & Run: api/runtime.md
+      - build_llm: api/llm.md
+      - Exceptions: api/exceptions.md
 
-  - Networking Layer:
-      - HTTP & Transports: api/http.md
-
-  - Framework Integration:
-      - Adapters: api/adapters.md
+  - Reference:
+      - Changelog: reference/changelog.md
+      - FAQ: reference/faq.md

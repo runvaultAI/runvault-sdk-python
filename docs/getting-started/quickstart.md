@@ -1,66 +1,19 @@
 # Quickstart
 
-This page takes you from "I have `runvault` installed" to "an LLM call has flowed through the RunVault proxy under a cryptographic identity" in roughly fifteen lines of code.
+This page takes you from "I have `runvault` installed" to "a real LLM call has been signed and routed through the RunVault proxy" in about twenty lines of code.
 
-The example uses **LangGraph** as the agent framework and **ChatOpenAI** as the LLM. Both are opt-in extras:
+The example uses LangChain's `ChatOpenAI`. The flow is identical for any other supported LLM class — only the import changes.
 
 ```bash
-pip install runvault[langgraph,langchain-openai]
+pip install "runvault[langchain-openai]"
 ```
 
-Make sure your RunVault backend is reachable and you have a project API key (`rv_live_…`) before you begin.
+## 1. Create the SDK client
 
-## A minimal LangGraph graph
-
-Start with the smallest possible graph — one node that calls an LLM and returns the answer. The `ChatOpenAI` import comes from `runvault`, not from `langchain_openai`: it is a real instance of the upstream class, but the underlying HTTP transport has been replaced so every request flows through the RunVault proxy.
-
-```python
-from typing import TypedDict
-
-from langgraph.graph import StateGraph, END
-
-from runvault import ChatOpenAI
-
-llm = ChatOpenAI(model="gpt-4o-mini")
-
-
-class State(TypedDict):
-    question: str
-    answer: str
-
-
-def call_model(state: State) -> dict:
-    response = llm.invoke(state["question"])
-    return {"answer": response.content}
-
-
-builder = StateGraph(State)
-builder.add_node("model", call_model)
-builder.set_entry_point("model")
-builder.add_edge("model", END)
-graph = builder.compile()
-```
-
-At this point you have an ordinary compiled LangGraph graph. It is not yet runnable — the `ChatOpenAI` instance is configured to route through the RunVault proxy, but no agent has registered, so the transport has nothing to authenticate with.
-
-## Initialize RunVault
-
-Construct a `RunVault` client. This does no I/O — it stores your credentials and prepares the internal HTTP layer.
-
-```python
-from runvault import RunVault
-
-rv = RunVault(
-    api_key="rv_live_...",
-    be_url="https://your-runvault-backend",
-)
-```
-
-A common production pattern is to read both values from the environment:
+`RunVault(...)` holds your project API key and the backend URL. Construction does not touch the network.
 
 ```python
 import os
-
 from runvault import RunVault
 
 rv = RunVault(
@@ -69,63 +22,64 @@ rv = RunVault(
 )
 ```
 
-## Register the agent and wrap the graph
+## 2. Register an agent
 
-`rv.init(...)` is the only call that crosses the network. It registers the agent with the backend, persists the credentials it receives, and wires up the LangGraph adapter so the active agent is propagated automatically into every node.
+`rv.register_agent(...)` is the only call that crosses the network at startup. On first use the backend provisions an Ed25519 keypair and a CA-signed certificate; both are cached to `~/.runvault/<agent_id>/`. Subsequent runs of the same `agent_id` reuse the on-disk material.
 
 ```python
-agent = rv.init(
-    framework="langgraph",
-    app=graph,
-    agent_id="quickstart-agent",
-    name="Quickstart Agent",
-    budget=1.0,                  # optional USD cap on this run
-    budget_alert_threshold=80,   # optional alert at 80% spent
+identity = rv.register_agent(
+    agent_id="research-v1",
+    name="Research Agent",
+    budget=1.0,                   # optional USD cap
+    budget_alert_threshold=80,    # optional alert at 80% spent
 )
 ```
 
-`init` is idempotent on `agent_id`: running this script twice reuses the same agent identity and only issues a fresh `run_id` for the new execution.
+The returned `Identity` is a long-lived object. You typically build it once at startup and reuse it for the life of the process.
 
-## Invoke the graph
+## 3. Build an LLM that routes through the proxy
 
-Use `agent` exactly as you would use the original compiled graph:
-
-```python
-result = agent.invoke({"question": "What is the capital of France?"})
-print(result["answer"])
-```
-
-Expected output (model output will vary):
-
-```
-The capital of France is Paris.
-```
-
-Async and streaming behave the same way:
+`identity.build_llm(BaseClass)` returns a dynamic subclass of the framework's LLM class with the RunVault transport pre-wired. Inherited methods (`.invoke()`, `.stream()`, `.bind_tools()`, …) continue to work unchanged.
 
 ```python
-# async
-result = await agent.ainvoke({"question": "..."})
+from langchain_openai import ChatOpenAI
 
-# streaming
-for chunk in agent.stream({"question": "..."}):
-    print(chunk)
+RVChat = identity.build_llm(ChatOpenAI)
+llm = RVChat(model="gpt-4o-mini")
+```
+
+`RVChat` is a real subclass of `ChatOpenAI` — `isinstance` checks, LangChain Runnables, tool binding, and streaming all behave as upstream.
+
+## 4. Wrap the call in a `Run`
+
+Every outbound LLM request must happen inside `with identity.run():`. The block defines an execution scope, generates a fresh `run_id` locally (no backend round-trip), and tags every JWT minted inside it with that `run_id`.
+
+```python
+with identity.run():
+    answer = llm.invoke("What is the capital of France?")
+    print(answer.content)
+```
+
+Async usage is symmetric:
+
+```python
+async with identity.run():
+    answer = await llm.ainvoke("...")
 ```
 
 ## What just happened
 
-When `agent.invoke(...)` was called, four things happened that did not require any code from you:
+When `llm.invoke(...)` fired, four things happened that did not require any code from you:
 
-1. The LangGraph adapter set the active `Agent` on a `ContextVar` for the duration of the call.
-2. Your node called `llm.invoke(...)`, which fired an HTTP request through the RunVault transport installed inside `ChatOpenAI`.
-3. The transport read the `Agent` from the `ContextVar`, minted a fresh five-minute EdDSA JWT signed with the agent's private key, attached the CA-signed certificate, rewrote the request URL to point at the proxy, and forwarded the call.
-4. The proxy verified the certificate's CA signature, verified the JWT against the public key embedded in the certificate, checked the budget, forwarded the request to OpenAI, and returned the response.
+1. The active `Run` was looked up from a `ContextVar`. (No active run → `NoActiveRunError` before any network call.)
+2. The transport refused to attach RunVault credentials to anything other than your proxy host. ([Host allowlist](../guides/authentication.md#host-allowlist).)
+3. A fresh, 5-minute-TTL EdDSA JWT was signed with the identity's private key, embedding `agent_id`, `run_id`, and a fresh `jti`. The certificate went along in the `X-RV-Certificate` header.
+4. The proxy verified the certificate's CA signature, verified the JWT against the public key inside the certificate, checked the budget, forwarded the request to OpenAI, and returned the response.
 
-Your agent now has a verifiable identity, a spending cap that the proxy enforces, and no long-lived OpenAI API key anywhere in its process — without changing the shape of your application code.
+Your agent now has a verifiable identity, a spending cap enforced at the proxy, and no OpenAI API key anywhere in its process — without changing the shape of your application code.
 
 ## Next
 
-- [Client](../api/client.md) — what `RunVault.init(...)` does step by step.
-- [Runtime](../api/runtime.md) — the `Agent` object returned by `init`, and how it refreshes credentials in flight.
-- [Auth & Credentials](../api/auth.md) — the PKI flow and on-disk credential layout.
-- [Adapters](../api/adapters.md) — how the LangGraph wrapper works and how to add support for another framework.
+- [LLM Clients](../guides/llm-clients.md) — every LLM class `build_llm` can wire.
+- [Frameworks: LangGraph](../guides/frameworks-langgraph.md) — using a wired LLM inside a compiled graph.
+- [Authentication](../guides/authentication.md) — the PKI flow in detail.
