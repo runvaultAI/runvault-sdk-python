@@ -35,11 +35,16 @@ platform. It handles:
 - **Per-request signing** — every outbound LLM call is signed with a fresh
   short-lived EdDSA JWT minted by the SDK (no replay window, no shared
   secrets in transit).
-- **Drop-in LLM clients** — `ChatOpenAI`, `ChatAnthropic`,
-  `ChatGoogleGenerativeAI`, etc. that route through the RunVault proxy
-  with no other code change.
-- **Framework adapters** — wrap a compiled LangGraph graph and the SDK
-  propagates agent context to every node automatically.
+- **Drop-in LLM clients** — `identity.build_llm(ChatOpenAI)` /
+  `identity.build_llm(BaseLLM)` (CrewAI) / etc. return proxy-wired
+  subclasses of your framework's native LLM. No other code change.
+- **Run-scoped execution** — `with identity.run():` activates a fresh
+  `run_id` on a ContextVar so every LLM call inside the block is
+  attributed to that run.
+- **Transport-level guards** — host allowlist refuses to attach
+  credentials to non-proxy URLs (`UntrustedHostError`); cross-identity
+  guard catches mis-wired LLMs across multi-agent code
+  (`CrossIdentityError`, configurable per-identity via `security_policy`).
 - **Recovery flows** — auto-fall-back to `/credentials/refresh` when the
   admin rotates an agent's certificate, with one transparent retry on
   the in-flight request.
@@ -66,11 +71,12 @@ pip install runvault                                    # SDK only
 pip install runvault[openai]                            # OpenAI raw client
 pip install runvault[anthropic]                         # Anthropic raw client
 pip install runvault[langgraph,langchain-openai]        # LangGraph + LangChain OpenAI
+pip install runvault[crewai]                            # CrewAI BaseLLM subclass
 pip install runvault[all]                               # everything
 ```
 
 Available extras: `openai`, `anthropic`, `google`, `langchain-openai`,
-`langchain-anthropic`, `langchain-google`, `langgraph`, `all`.
+`langchain-anthropic`, `langchain-google`, `langgraph`, `crewai`, `all`.
 
 Requires **Python 3.9+**.
 
@@ -79,40 +85,68 @@ Requires **Python 3.9+**.
 ## Quick start
 
 ```python
-from runvault import RunVault, ChatOpenAI
+from runvault import RunVault
+from langchain_openai import ChatOpenAI
 
 rv = RunVault(
     api_key="rv_live_...",                # your RunVault project API key
     be_url="https://your-runvault-backend",
 )
 
-llm = ChatOpenAI(model="gpt-4o-mini")     # routes through the RunVault proxy
-graph = build_graph(llm)                  # any compiled LangGraph graph
-
-agent = rv.init(
-    framework="langgraph",
-    app=graph,
+# 1. Register the agent. Idempotent — same agent_id returns the same
+#    identity. First call provisions an Ed25519 keypair + CA-signed cert.
+identity = rv.register_agent(
     agent_id="research-v1",
     name="Research Agent",
     budget=1.0,                           # optional USD cap
     budget_alert_threshold=80,            # optional alert at 80% spent
+    security_policy="hard",               # optional; default "hard"
 )
 
-result = agent.invoke({"input": "What is..."})
+# 2. Build a proxy-routed LLM class for your framework.
+RVChat = identity.build_llm(ChatOpenAI)
+llm = RVChat(model="gpt-4o-mini")
+graph = build_graph(llm)                  # any compiled LangGraph graph
+
+# 3. Wrap each invocation in `with identity.run():` — generates a fresh
+#    run_id locally and sets it on a ContextVar so every LLM call inside
+#    the block is signed with that run's claims.
+with identity.run():
+    result = graph.invoke({"input": "What is..."})
 ```
 
-Behind the scenes `rv.init()`:
+Behind the scenes:
 
-1. **Registers** the agent with the backend (idempotent — calling again
-   with the same `agent_id` returns the existing record plus a fresh
-   `run_id`).
-2. **Persists the keypair** to `~/.runvault/<agent_id>/` with
-   `0600` / `0700` permissions.
-3. **Verifies** the CA signature on the certificate, when
-   `RV_CA_PUBLIC_KEY` is set.
-4. **Wraps** your compiled LangGraph app so every LLM call inside it is
-   signed and routed through the RunVault proxy with the correct
-   identity and run context.
+1. **Registration** persists the keypair + cert to
+   `~/.runvault/<agent_id>/` with `0600` / `0700` permissions and (when
+   `RV_CA_PUBLIC_KEY` is set) verifies the CA signature.
+2. **`identity.build_llm(BaseClass)`** returns a dynamic subclass wired
+   to route through the RunVault proxy via a custom httpx transport.
+   Same dispatch covers `langchain_openai.ChatOpenAI`,
+   `langchain_anthropic.ChatAnthropic`,
+   `langchain_google_genai.ChatGoogleGenerativeAI`,
+   `openai.OpenAI` / `AsyncOpenAI`, and `crewai.BaseLLM`.
+3. **`with identity.run():`** is a ContextVar-scoped context manager.
+   Every LLM call inside the block reads the active run, mints a fresh
+   5-minute EdDSA JWT, and sends it with the cert in two custom
+   headers. No backend round-trip per run.
+4. **Transport guards** run on every request:
+   - Host allowlist refuses to attach credentials to non-proxy URLs.
+   - Cross-identity guard catches LLMs invoked under a *different*
+     identity's active run (`security_policy="hard"` raises; `"soft"`
+     warns and bills the bound identity).
+
+Inside graph nodes or tool functions that don't have `identity` in
+scope, use `runvault.current_run()` for ambient access:
+
+```python
+from runvault import current_run
+
+def my_tool(query: str) -> str:
+    run = current_run()                   # raises if outside `identity.run()`
+    log.info("tool_call", run_id=run.run_id, agent_id=run.agent_id)
+    ...
+```
 
 ---
 
@@ -191,27 +225,32 @@ print("certificate valid")
 
 ## Supported LLM clients
 
-Drop-in factories that return real upstream instances configured to route
-through the RunVault proxy:
+`identity.build_llm(BaseClass)` dispatches on the base class and returns
+a subclass wired to route through the RunVault proxy:
 
-| Factory | Underlying class | Extra |
+| Base class you pass in | Underlying client | Extra |
 |---|---|---|
-| `runvault.ChatOpenAI` | `langchain_openai.ChatOpenAI` | `langchain-openai` |
-| `runvault.OpenAI` / `AsyncOpenAI` | `openai.OpenAI` / `AsyncOpenAI` | `openai` |
-| `runvault.ChatAnthropic` | `langchain_anthropic.ChatAnthropic` | `langchain-anthropic` |
-| `runvault.Anthropic` / `AsyncAnthropic` | `anthropic.Anthropic` / `AsyncAnthropic` | `anthropic` |
-| `runvault.ChatGoogleGenerativeAI` | `langchain_google_genai.ChatGoogleGenerativeAI` | `langchain-google` |
+| `langchain_openai.ChatOpenAI` | LangChain OpenAI | `langchain-openai` |
+| `openai.OpenAI` / `AsyncOpenAI` | OpenAI Python SDK | `openai` |
+| `langchain_anthropic.ChatAnthropic` | LangChain Anthropic | `langchain-anthropic` |
+| `langchain_google_genai.ChatGoogleGenerativeAI` | LangChain Google | `langchain-google` |
+| `crewai.BaseLLM` | CrewAI `BaseLLM` subclass | `crewai` |
 
-Streaming, `.bind(...)`, `.with_retry(...)`, tool use, and `isinstance`
-checks all behave like the underlying class — the only difference is
-that traffic flows through your RunVault proxy.
+Streaming, `.bind(...)`, `.with_retry(...)`, tool use, structured
+outputs (`response_model` on CrewAI), and `isinstance` checks all
+behave like the underlying class — the only difference is that
+traffic flows through your RunVault proxy.
 
 ## Supported frameworks
 
-- **LangGraph** — pass a compiled graph to `rv.init(framework="langgraph", app=graph, …)`.
+- **LangGraph** — build the LLM via `identity.build_llm(ChatOpenAI)`,
+  pass it to your graph, and invoke inside `with identity.run():`. The
+  SDK never wraps the graph itself.
+- **CrewAI** — build the LLM via `identity.build_llm(BaseLLM)`, pass it
+  to your `Agent`, and call `crew.kickoff()` inside `with identity.run():`.
 
-Adding a new framework adapter is a small file under
-`runvault.adapters` plus an entry in `ADAPTERS`. PRs welcome.
+Adding a new framework is a small wiring function in
+`runvault.llm.<framework>` plus a `_DISPATCH` entry. PRs welcome.
 
 ---
 
@@ -220,21 +259,30 @@ Adding a new framework adapter is a small file under
 The SDK raises typed exceptions so you can branch on the failure mode:
 
 ```python
-from runvault.exceptions import (
+from runvault import (
     AgentSuspendedError,            # admin suspended this agent — permanent
     BudgetExceededError,            # 402 — agent has hit its spend cap
     CertificateVerificationError,   # CA signature failed
+    CrossIdentityError,             # bound LLM invoked under another identity's run
+    CrossIdentityWarning,           # ditto, but security_policy="soft"
     LLMProviderError,               # upstream provider returned an error
+    NoActiveRunError,               # LLM call outside `with identity.run():`
     ProxyError,                     # RunVault proxy rejected the request
     RegistrationError,              # backend registration failure
     TokenExpiredError,              # JWT or certificate is invalid/expired
+    UntrustedHostError,             # transport refused a non-proxy URL
 )
 ```
 
-`AgentSuspendedError` is the only one your code probably wants to catch
+`AgentSuspendedError` is the one your code most likely wants to catch
 specifically — it indicates an admin has clicked "Suspend" in the
 dashboard and only an admin can re-enable the agent. The SDK will not
 auto-retry through it.
+
+`NoActiveRunError`, `UntrustedHostError`, and `CrossIdentityError`
+signal SDK-side guard violations rather than backend / network
+failures — usually a configuration or wiring bug to fix at the call
+site, not a transient condition to retry.
 
 ---
 

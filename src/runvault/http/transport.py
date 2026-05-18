@@ -1,34 +1,55 @@
 """RunVaultProviderTransport — scoped httpx transport for LLM provider routing.
 
-Replaces the global httpx monkey-patch (interceptor.py).  Each LLM client
-built by a factory in runvault.llm.* receives its own httpx.Client whose transport
-is one of these classes.  Nothing outside those clients is affected.
+Each LLM client built by a factory in ``runvault.llm.*`` receives its
+own httpx.Client whose transport is one of these classes — a transport
+is **bound** to the Identity that built the LLM. Nothing outside those
+clients is affected.
 
 At request time the transport:
-  1. Reads the active Agent from the _current_agent ContextVar.
-  2. Replaces the PLACEHOLDER_BASE URL with the real proxy URL.
-  3. Mints a fresh per-request EdDSA JWT signed with the agent's private key
-     and injects the PKI headers (X-RV-Certificate + X-RV-Agent-JWT). The
-     legacy Bearer-token path was removed in v0.2.0.
-  4. Forwards the rewritten request to the real network.
-  5. On 401 CERTIFICATE_REVOKED, refreshes credentials and retries once.
-  6. On any other 4xx/5xx, reads the body and raises a typed RunVaultError.
+  1. Reads the active Run from the _CURRENT_RUN ContextVar (set by
+     ``with identity.run():``). Raises :class:`NoActiveRunError` if
+     no run is active.
+  2. Refuses to attach RunVault credentials to any host other than the
+     bound identity's proxy — raises :class:`UntrustedHostError`. Without
+     this, a user-held ``identity.http_client()`` aimed at any URL would
+     exfiltrate valid signed JWTs.
+  3. Compares the bound identity (the LLM's owner) against the active
+     run's identity. On mismatch, consults the run's effective
+     ``security_policy`` and either raises :class:`CrossIdentityError`
+     (``"hard"``) or warns with :class:`CrossIdentityWarning` (``"soft"``).
+  4. Replaces the PLACEHOLDER_BASE URL with the bound identity's proxy URL.
+  5. Mints a fresh per-request EdDSA JWT signed with the **bound**
+     identity's private key (the only key the transport holds) and
+     injects the PKI headers (X-RV-Certificate + X-RV-Agent-JWT).
+  6. Forwards the rewritten request to the real network.
+  7. On 401 CERTIFICATE_REVOKED, calls
+     ``bound_identity.refresh_credentials()`` and retries once.
+  8. On any other 4xx/5xx, reads the body and raises a typed RunVaultError.
 
-The proxy URL is read from the active Agent, which captures it once at
-registration time.  It is fixed for the lifetime of that Agent — changing
-RUNVAULT_PROXY_URL after construction has no effect on existing agents.
+The bound identity is captured at transport construction; ``run.identity``
+is consulted only for run_id and for the cross-identity check.
 """
 
 from __future__ import annotations
+
+import warnings
+from typing import TYPE_CHECKING
 
 import httpx
 
 from runvault.exceptions import (
     BudgetExceededError,
+    CrossIdentityError,
+    CrossIdentityWarning,
     LLMProviderError,
+    NoActiveRunError,
     ProxyError,
     TokenExpiredError,
+    UntrustedHostError,
 )
+
+if TYPE_CHECKING:
+    from runvault.identity import Identity
 
 # Placeholder inserted by LLM factories at construction time.
 # Replaced at request time with the real proxy URL from the active Agent.
@@ -195,44 +216,114 @@ def _is_cert_revoked_response(response: httpx.Response) -> bool:
 
 def _build_signed_request(
     request: httpx.Request,
-    agent,  # sdk.runtime.agent.Agent — typed loosely to avoid circular import
+    bound_identity: "Identity",
+    run_id: str,
     provider: str,
 ) -> httpx.Request:
     """Mint a fresh per-request EdDSA JWT + rewrite URL/headers for the proxy.
 
-    Helper used twice on the retry path: once for the initial send, and once
-    after ``agent.refresh_credentials()`` if the proxy reported the cert was
-    revoked. Both calls read the agent's current credentials at the moment
-    they're made — ensuring the second call uses the freshly-minted ones.
+    Signs with the *bound* identity's key — the only key the transport
+    holds. ``run_id`` comes from the active Run separately so the transport
+    can record the call against the correct execution scope even when
+    ``security_policy="soft"`` lets a cross-identity call through.
+
+    Helper used twice on the retry path: once for the initial send, and
+    once after ``bound_identity.refresh_credentials()`` if the proxy
+    reported the cert was revoked. Both calls read the identity's current
+    credentials at the moment they're made.
     """
     from runvault.auth.signer import create_agent_jwt
 
-    if agent.private_key_bytes is None or agent.certificate_b64 is None:
+    if bound_identity.private_key_bytes is None or bound_identity.certificate_b64 is None:
         raise RuntimeError(
-            "Agent is missing PKI credentials. Ensure the agent registered "
-            "successfully and RV_CA_PUBLIC_KEY is set."
+            "Identity is missing PKI credentials. Ensure register_agent() "
+            "completed successfully and RV_CA_PUBLIC_KEY is set."
         )
 
     agent_jwt = create_agent_jwt(
-        agent_id=str(agent.info.id),
-        run_id=str(agent.info.run_id),
-        private_key_bytes=agent.private_key_bytes,
+        agent_id=bound_identity.db_agent_id,
+        run_id=run_id,
+        private_key_bytes=bound_identity.private_key_bytes,
     )
 
     return _rewrite_request(
         request,
-        proxy_base=agent.info.proxy_url,
+        proxy_base=bound_identity.proxy_url,
         provider=provider,
         agent_jwt=agent_jwt,
-        certificate_b64=agent.certificate_b64,
+        certificate_b64=bound_identity.certificate_b64,
     )
+
+
+def _check_host_allowlist(
+    request: httpx.Request,
+    proxy_host: str,
+) -> None:
+    """Refuse to attach RunVault credentials to any host but the proxy.
+
+    The PLACEHOLDER_BASE rewrite step replaces the placeholder host with
+    the proxy host before headers are attached, so legitimate proxy-bound
+    requests always pass. A user-held ``identity.http_client()`` aimed at
+    an arbitrary URL trips this check before any signing happens, so no
+    JWT is exposed.
+    """
+    request_host = request.url.host
+    if request_host == proxy_host:
+        return
+    # Allow the placeholder host through — it gets rewritten to the proxy
+    # in _rewrite_request a few lines later. Anything else is suspect.
+    if request_host == httpx.URL(PLACEHOLDER_BASE).host:
+        return
+    raise UntrustedHostError(
+        f"Refusing to attach RunVault credentials to {request_host!r}; "
+        f"allowed host: {proxy_host!r}.",
+        error_code="UNTRUSTED_HOST",
+        user_string=(
+            "The RunVault client refused to send a signed request to a "
+            "non-proxy URL. Check the URL your code is hitting."
+        ),
+    )
+
+
+def _check_cross_identity(
+    bound_identity: "Identity",
+    run,
+) -> None:
+    """Compare the bound identity to the active run's identity.
+
+    In ``"hard"`` mode (default), mismatch raises :class:`CrossIdentityError`
+    before the request is sent. In ``"soft"`` mode, the SDK warns and lets
+    the call proceed — the transport then signs with the bound identity's
+    key (the only key it holds), so the **bound** identity is billed.
+    """
+    run_identity = run.identity
+    if run_identity.agent_id == bound_identity.agent_id:
+        return
+
+    policy = run.effective_security_policy
+    msg = (
+        f"LLM bound to agent_id={bound_identity.agent_id!r} was invoked "
+        f"under a run owned by agent_id={run_identity.agent_id!r}."
+    )
+    if policy == "hard":
+        raise CrossIdentityError(
+            msg,
+            error_code="CROSS_IDENTITY",
+            user_string=(
+                "A RunVault call crossed identity boundaries. Check that "
+                "each LLM is used inside the matching `with identity.run():`."
+            ),
+        )
+    warnings.warn(msg, CrossIdentityWarning, stacklevel=2)
 
 
 class RunVaultProviderTransport(httpx.BaseTransport):
     """Sync httpx transport that routes requests through the RunVault proxy.
 
-    One instance is created per LLM client. The active Agent is looked
-    up from the ContextVar at request time — never stored on the transport.
+    One instance is created per LLM client and **bound to the Identity
+    that built the LLM**. The active Run is looked up from the ContextVar
+    at request time; if the bound identity and the run's identity differ,
+    the cross-identity guard kicks in per the run's ``security_policy``.
 
     Credential refresh on 401 CERTIFICATE_REVOKED
     ─────────────────────────────────────────────
@@ -240,40 +331,49 @@ class RunVaultProviderTransport(httpx.BaseTransport):
     revoke), the proxy's revocation cache picks up the change within ≤30 s
     and starts returning 401 CERTIFICATE_REVOKED to in-flight requests. To
     keep the agent running transparently, this transport detects that
-    specific 4xx, calls ``agent.refresh_credentials()`` to mint fresh
-    creds, and retries the request ONCE with the new JWT/cert.
+    specific 4xx, calls ``bound_identity.refresh_credentials()`` to mint
+    fresh creds, and retries the request ONCE with the new JWT/cert.
 
     Limitations of the retry:
       - One retry only. If the second attempt also fails, the error
         propagates normally — no retry storm.
       - If the agent has been administratively suspended,
-        ``agent.refresh_credentials()`` raises ``AgentSuspendedError``;
+        ``bound_identity.refresh_credentials()`` raises ``AgentSuspendedError``;
         the transport propagates it without retrying.
     """
 
-    def __init__(self, provider: str) -> None:
+    def __init__(self, provider: str, bound_identity: "Identity") -> None:
         self.provider = provider
+        self._bound_identity = bound_identity
+        self._proxy_host = httpx.URL(bound_identity.proxy_url).host
         self._inner = httpx.HTTPTransport(verify=True)
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
-        from runvault.context import _current_agent
+        from runvault.identity import _CURRENT_RUN
 
-        agent = _current_agent.get(None)
-        if agent is None:
-            raise RuntimeError(
-                f"No active RunVault agent. Call runvault.init(...) before "
-                f"invoking this {self.provider} LLM client."
+        run = _CURRENT_RUN.get(None)
+        if run is None:
+            raise NoActiveRunError(
+                f"No active RunVault run. Wrap your {self.provider} call in "
+                f"`with identity.run():` before invoking it."
             )
 
-        rewritten = _build_signed_request(request, agent, self.provider)
+        _check_host_allowlist(request, self._proxy_host)
+        _check_cross_identity(self._bound_identity, run)
+
+        rewritten = _build_signed_request(
+            request, self._bound_identity, run.run_id, self.provider,
+        )
         response = self._inner.handle_request(rewritten)
 
         # Cert-revoked recovery: refresh + retry exactly once.
         if _is_cert_revoked_response(response):
             response.read()  # drain so the connection can be reused
-            agent.refresh_credentials()  # mutates agent.private_key_bytes/cert in place;
-                                         # raises AgentSuspendedError on 403 (don't retry)
-            rewritten = _build_signed_request(request, agent, self.provider)
+            self._bound_identity.refresh_credentials()  # mutates in place;
+                                                        # raises AgentSuspendedError on 403
+            rewritten = _build_signed_request(
+                request, self._bound_identity, run.run_id, self.provider,
+            )
             response = self._inner.handle_request(rewritten)
 
         if response.status_code >= 400:
@@ -290,24 +390,31 @@ class RunVaultProviderAsyncTransport(httpx.AsyncBaseTransport):
     """Async httpx transport that routes requests through the RunVault proxy.
 
     Mirrors :class:`RunVaultProviderTransport`, including the lazy refresh
-    on 401 CERTIFICATE_REVOKED.
+    on 401 CERTIFICATE_REVOKED and the cross-identity guard.
     """
 
-    def __init__(self, provider: str) -> None:
+    def __init__(self, provider: str, bound_identity: "Identity") -> None:
         self.provider = provider
+        self._bound_identity = bound_identity
+        self._proxy_host = httpx.URL(bound_identity.proxy_url).host
         self._inner = httpx.AsyncHTTPTransport(verify=True)
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        from runvault.context import _current_agent
+        from runvault.identity import _CURRENT_RUN
 
-        agent = _current_agent.get(None)
-        if agent is None:
-            raise RuntimeError(
-                f"No active RunVault agent. Call runvault.init(...) before "
-                f"invoking this {self.provider} LLM client."
+        run = _CURRENT_RUN.get(None)
+        if run is None:
+            raise NoActiveRunError(
+                f"No active RunVault run. Wrap your {self.provider} call in "
+                f"`async with identity.run():` before invoking it."
             )
 
-        rewritten = _build_signed_request(request, agent, self.provider)
+        _check_host_allowlist(request, self._proxy_host)
+        _check_cross_identity(self._bound_identity, run)
+
+        rewritten = _build_signed_request(
+            request, self._bound_identity, run.run_id, self.provider,
+        )
         response = await self._inner.handle_async_request(rewritten)
 
         if _is_cert_revoked_response(response):
@@ -318,8 +425,10 @@ class RunVaultProviderAsyncTransport(httpx.AsyncBaseTransport):
             # enough (single round-trip) that a brief block in the event
             # loop is acceptable here. If/when BackendClient gains an
             # async variant, this should switch to an async call.
-            agent.refresh_credentials()
-            rewritten = _build_signed_request(request, agent, self.provider)
+            self._bound_identity.refresh_credentials()
+            rewritten = _build_signed_request(
+                request, self._bound_identity, run.run_id, self.provider,
+            )
             response = await self._inner.handle_async_request(rewritten)
 
         if response.status_code >= 400:

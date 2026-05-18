@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "runvault"
-version = "0.2.1"
+version = "0.3.0"
 description = "Financial identity infrastructure for AI agents — Python SDK"
 readme = "README.md"
 # PEP 639 license metadata. The SPDX expression renders as a clean
@@ -44,10 +44,11 @@ Issues        = "https://github.com/runvaultAI/runvault-sdk-python/issues"
 [project.optional-dependencies]
 # Raw provider SDKs
 # Lower bounds are pinned only where the SDK relies on a specific API:
-# openai/anthropic both require the `http_client=` constructor kwarg
-# (added in openai 1.0 and anthropic 0.7 respectively). Upper bounds
-# guard against future major-version breakage.
-openai     = ["openai>=1.0,<3"]
+# `openai>=1.40` is required for `chat.completions.parse` (structured
+# outputs, used by the CrewAI adapter's response_model path). Anthropic
+# requires `http_client=` (since 0.7). Upper bounds guard against
+# future major-version breakage.
+openai     = ["openai>=1.40,<3"]
 anthropic  = ["anthropic>=0.7,<1"]
 google     = ["google-generativeai>=0.7,<1"]
 
@@ -66,9 +67,16 @@ langchain-google    = ["langchain-google-genai>=2.0,<5"]
 # graph — stable since langgraph 0.0.x — so no lower bound is needed.
 langgraph = ["langgraph<2"]
 
+# CrewAI uses our own BaseLLM subclass that builds its OpenAI client
+# internally, so we depend on both crewai and openai here.
+# `crewai>=0.130` is required because we import `crewai.utilities.events.*`
+# and `crewai.llms.base_llm.BaseLLM`, both moved during the 0.12x
+# restructure. `openai>=1.40` is required for `.parse()` (response_model).
+crewai = ["crewai>=0.130,<2", "openai>=1.40,<3"]
+
 # Convenience: everything an end user might want
 all = [
-    "runvault[openai,anthropic,google,langchain-openai,langchain-anthropic,langchain-google,langgraph]",
+    "runvault[openai,anthropic,google,langchain-openai,langchain-anthropic,langchain-google,langgraph,crewai]",
 ]
 
 # SDK development (pytest, build, publish). Not for end users.
@@ -90,6 +98,7 @@ include = [
     "src/runvault",
     "tests",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "pyproject.toml",
 ]

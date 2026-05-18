@@ -45,6 +45,7 @@ class AgentInfo:
     llm_provider: str
     proxy_url: str    # base proxy URL returned by the backend on registration
     created: bool
+    security_policy: str = "hard"
 
 
 def register(
@@ -54,6 +55,7 @@ def register(
     name: str,
     budget: float | None = None,
     budget_alert_threshold: float | None = None,
+    security_policy: str | None = None,
 ) -> tuple[AgentInfo, bytes, dict]:
     """Register or recover credentials for an agent.
 
@@ -66,7 +68,9 @@ def register(
         AgentSuspendedError: backend returned 403; admin must reactivate.
         RegistrationError:   any other backend failure (network, 5xx, etc.).
     """
-    payload = _build_payload(api_key, agent_id, name, budget, budget_alert_threshold)
+    payload = _build_payload(
+        api_key, agent_id, name, budget, budget_alert_threshold, security_policy,
+    )
 
     try:
         data = http.post("/auth/agents/runs", payload)
@@ -82,6 +86,7 @@ def register(
             name=name,
             budget=budget,
             budget_alert_threshold=budget_alert_threshold,
+            security_policy=security_policy,
         )
 
     # Auto-fall-back: if the backend returned the idempotent "existing
@@ -105,6 +110,7 @@ def register(
             name=name,
             budget=budget,
             budget_alert_threshold=budget_alert_threshold,
+            security_policy=security_policy,
         )
 
     return _process_registration_response(
@@ -123,6 +129,7 @@ def refresh(
     name: str,
     budget: float | None = None,
     budget_alert_threshold: float | None = None,
+    security_policy: str | None = None,
 ) -> tuple[AgentInfo, bytes, dict]:
     """Mint fresh credentials for an existing agent.
 
@@ -138,7 +145,9 @@ def refresh(
     401 CERTIFICATE_REVOKED, and indirectly by ``register()`` when the
     backend returns 410 CERT_ROTATION_REQUIRED.
     """
-    payload = _build_payload(api_key, agent_id, name, budget, budget_alert_threshold)
+    payload = _build_payload(
+        api_key, agent_id, name, budget, budget_alert_threshold, security_policy,
+    )
     try:
         data = http.post("/auth/agents/credentials/refresh", payload)
     except RegistrationError as exc:
@@ -169,12 +178,15 @@ def _build_payload(
     name: str,
     budget: float | None,
     budget_alert_threshold: float | None,
+    security_policy: str | None,
 ) -> dict:
     payload: dict = {"agent_id": agent_id, "name": name, "rv_api_key": api_key}
     if budget is not None:
         payload["budget"] = budget
     if budget_alert_threshold is not None:
         payload["budget_alert_threshold"] = budget_alert_threshold
+    if security_policy is not None:
+        payload["security_policy"] = security_policy
     return payload
 
 
@@ -187,6 +199,7 @@ def _handle_init_error(
     name: str,
     budget: float | None,
     budget_alert_threshold: float | None,
+    security_policy: str | None,
 ) -> tuple[AgentInfo, bytes, dict]:
     """Branch on the backend error code returned by /auth/agents/runs."""
     if exc.error_code == "AGENT_SUSPENDED":
@@ -212,6 +225,7 @@ def _handle_init_error(
             name=name,
             budget=budget,
             budget_alert_threshold=budget_alert_threshold,
+            security_policy=security_policy,
         )
 
     raise
@@ -281,6 +295,9 @@ def _process_registration_response(
         llm_provider=data["llm_provider"],
         proxy_url=data["proxy_url"],
         created=data["agent_created"],
+        # Backend is authoritative; falls back to "hard" if older backend
+        # versions haven't been deployed yet.
+        security_policy=data.get("security_policy", "hard"),
     )
 
     log.info(

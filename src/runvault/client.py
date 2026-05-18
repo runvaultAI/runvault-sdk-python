@@ -2,29 +2,34 @@
 
 Usage:
 
-    from runvault import RunVault, ChatOpenAI
+    from runvault import RunVault
 
-    rv = RunVault(
-        api_key="rv_live_...",
-        be_url="https://your-runvault-backend",
+    rv = RunVault(api_key="rv_live_...", be_url="https://your-backend")
+
+    # 1. Register the agent — provisions cert + private key once.
+    identity = rv.register_agent(
+        agent_id="research-v1",
+        name="Research Agent",
+        budget=1.0,                          # optional
     )
-    llm = ChatOpenAI(model="gpt-4o-mini")
-    graph = build_graph(llm)
 
-    agent = rv.init(framework="langgraph", app=graph,
-                    agent_id="research-v1", name="Research Agent")
-    result = agent.invoke({"input": "..."})
+    # 2. Build a proxy-routed LLM.
+    RVChat = identity.build_llm(ChatOpenAI)
+
+    # 3. Wrap each invocation in a Run.
+    with identity.run():
+        result = compiled_graph.invoke({"input": "..."})
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Any
 
-from runvault.adapters import ADAPTERS
+from typing import Literal
+
 from runvault.auth.registration import register
 from runvault.http.backend import BackendClient
-from runvault.runtime.agent import Agent
+from runvault.identity import Identity
 
 log = logging.getLogger(__name__)
 
@@ -32,9 +37,13 @@ log = logging.getLogger(__name__)
 class RunVault:
     """RunVault SDK client.
 
+    Holds the API key (used only at registration) and a backend HTTP
+    client. One instance per process is typical, but multiple are
+    supported (e.g. testing against multiple environments).
+
     Args:
-        api_key: Active RunVault project API key (rv_live_…). Always required.
-        be_url:  Base URL of the RunVault backend. Always required.
+        api_key: Active RunVault project API key (``rv_live_…``).
+        be_url:  Base URL of the RunVault backend.
         timeout: HTTP request timeout in seconds for backend calls.
     """
 
@@ -47,18 +56,44 @@ class RunVault:
         self._api_key = api_key
         self._http = BackendClient(be_url=be_url, timeout=timeout)
 
-    def _register_agent(
+    def register_agent(
         self,
         agent_id: str,
         name: str,
         budget: float | None = None,
         budget_alert_threshold: float | None = None,
-    ) -> Agent:
-        """Register an agent and obtain a proxy JWT (internal).
+        security_policy: Literal["hard", "soft"] | None = None,
+    ) -> Identity:
+        """Register an agent (or load it if already registered) and return
+        a long-lived ``Identity`` ready to drive LLM calls.
 
-        Idempotent — the backend returns the existing agent record but always
-        issues a fresh run_id and JWT, scoping each execution for spend tracking.
-        Called by init(). Not part of the public API in v1.
+        Idempotent — same ``agent_id`` returns the same Identity. On
+        first registration the backend mints an Ed25519 keypair and
+        signs a certificate with the project CA; both are cached to
+        ``~/.runvault/<agent_id>/`` and held in memory on the returned
+        Identity. On re-registration the existing material is loaded
+        from disk.
+
+        Args:
+            agent_id:                External agent identifier (e.g. ``"research-v1"``).
+            name:                    Human-readable agent name.
+            budget:                  Optional hard spending cap in USD.
+            budget_alert_threshold:  Optional alert percentage (0–100).
+            security_policy:         Cross-identity guard mode for the LLMs
+                                     built from this identity. ``"hard"``
+                                     (default) raises ``CrossIdentityError``
+                                     on a mismatch; ``"soft"`` warns and
+                                     bills the bound identity. Honoured only
+                                     on first registration — the backend is
+                                     authoritative afterwards.
+
+        Returns:
+            An :class:`Identity` ready for ``identity.run()`` and
+            ``identity.build_llm()``.
+
+        Raises:
+            AgentSuspendedError: Admin has suspended this agent.
+            RegistrationError:   Backend registration failed.
         """
         info, private_key_bytes, certificate = register(
             http=self._http,
@@ -67,58 +102,20 @@ class RunVault:
             name=name,
             budget=budget,
             budget_alert_threshold=budget_alert_threshold,
+            security_policy=security_policy,
         )
-        return Agent(
+
+        # The run_id returned by the backend at registration is discarded.
+        # The new design generates run_ids locally inside `identity.run()`
+        # — this keeps the backend off the per-run hot path.
+
+        return Identity(
             info=info,
-            http=self._http,
-            # api_key + external_agent_id + name are needed by the Agent if
-            # it has to call /credentials/refresh after the admin rotates
-            # this agent's certificate. Storing them on the Agent keeps the
-            # transport layer slim — it just calls agent.refresh_credentials().
             api_key=self._api_key,
             external_agent_id=agent_id,
             name=name,
             private_key_bytes=private_key_bytes,
             certificate=certificate,
+            http=self._http,
+            security_policy=info.security_policy,
         )
-
-    def init(
-        self,
-        framework: str,
-        app: Any,
-        agent_id: str,
-        name: str,
-        budget: float | None = None,
-        budget_alert_threshold: float | None = None,
-    ) -> Agent:
-        """Register an agent and wrap a framework graph in one call.
-
-        Args:
-            framework: Framework name (e.g. "langgraph").
-            app:       Compiled graph or runnable to wrap.
-            agent_id:  Stable identifier for this agent.
-            name:      Human-readable name.
-            budget:    Optional spending cap in USD.
-            budget_alert_threshold: Optional alert percentage (0–100).
-
-        Returns:
-            Agent ready to invoke.
-
-        Raises:
-            ValueError: If the framework is not supported.
-        """
-        try:
-            wrap = ADAPTERS[framework]
-        except KeyError:
-            raise ValueError(
-                f"Unknown framework {framework!r}. "
-                f"Supported: {sorted(ADAPTERS)}"
-            )
-        agent = self._register_agent(
-            agent_id=agent_id,
-            name=name,
-            budget=budget,
-            budget_alert_threshold=budget_alert_threshold,
-        )
-        wrap(agent, app)
-        return agent

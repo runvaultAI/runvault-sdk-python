@@ -1,71 +1,66 @@
 """RunVault SDK.
 
-Core imports are eager. LLM factory functions are loaded lazily on first
-access so importing sdk never pulls in langchain, openai, anthropic, etc.
-unless the caller actually uses them.
+Public API:
 
-Usage:
+    from runvault import RunVault, current_run
 
-    from runvault import RunVault, ChatOpenAI, get_rv
+    rv = RunVault(api_key="rv_live_...", be_url="https://your-backend")
+    identity = rv.register_agent(agent_id="research-v1", name="Research Agent")
+
+    from langchain_openai import ChatOpenAI
+    RVChat = identity.build_llm(ChatOpenAI)
+
+    with identity.run():
+        result = compiled_graph.invoke({"input": "..."})
+
+    # Inside graph nodes or tool functions:
+    from runvault import current_run
+    def my_tool(...):
+        run = current_run()    # raises if outside a `with identity.run():` block
+        ...
 """
 
 from __future__ import annotations
 
-import importlib
-
 from runvault.client import RunVault
-from runvault.context import get_rv
 from runvault.exceptions import (
+    AgentSuspendedError,
     AuthenticationError,
     BudgetExceededError,
     ConfigurationError,
     ConnectionError,
+    CrossIdentityError,
+    CrossIdentityWarning,
     LLMProviderError,
+    NoActiveRunError,
     ProxyError,
     RegistrationError,
     RunVaultError,
     TokenExpiredError,
+    UntrustedHostError,
 )
+from runvault.identity import Identity, Run, current_run
 
 __all__ = [
     # Entry point
     "RunVault",
-    # Context
-    "get_rv",
+    # Primitives
+    "Identity",
+    "Run",
+    "current_run",
     # Exceptions
     "RunVaultError",
+    "AgentSuspendedError",
     "AuthenticationError",
     "BudgetExceededError",
     "ConfigurationError",
     "ConnectionError",
+    "CrossIdentityError",
+    "CrossIdentityWarning",
     "LLMProviderError",
+    "NoActiveRunError",
     "ProxyError",
     "RegistrationError",
     "TokenExpiredError",
-    # LLM factories (lazy)
-    "ChatOpenAI",
-    "OpenAI",
-    "AsyncOpenAI",
-    "ChatAnthropic",
-    "Anthropic",
-    "AsyncAnthropic",
-    "ChatGoogleGenerativeAI",
+    "UntrustedHostError",
 ]
-
-# Maps factory name → module path. Loaded on first attribute access.
-_LAZY: dict[str, str] = {
-    "ChatOpenAI":              "runvault.llm.openai",
-    "OpenAI":                  "runvault.llm.openai",
-    "AsyncOpenAI":             "runvault.llm.openai",
-    "ChatAnthropic":           "runvault.llm.anthropic",
-    "Anthropic":               "runvault.llm.anthropic",
-    "AsyncAnthropic":          "runvault.llm.anthropic",
-    "ChatGoogleGenerativeAI":  "runvault.llm.google",
-}
-
-
-def __getattr__(name: str):
-    if name in _LAZY:
-        module = importlib.import_module(_LAZY[name])
-        return getattr(module, name)
-    raise AttributeError(f"module 'sdk' has no attribute {name!r}")

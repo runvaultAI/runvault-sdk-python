@@ -10,10 +10,11 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from runvault.context import _current_agent
+from runvault.identity import _CURRENT_RUN
 from runvault.exceptions import (
     BudgetExceededError,
     LLMProviderError,
+    NoActiveRunError,
     ProxyError,
     TokenExpiredError,
 )
@@ -235,37 +236,48 @@ class TestRewriteRequest:
 # RunVaultProviderTransport
 # ---------------------------------------------------------------------------
 
-def _make_pki_agent(proxy_url: str = "http://proxy:8080"):
-    """Build a MagicMock that satisfies the PKI agent contract."""
-    agent = MagicMock()
-    agent.info.proxy_url = proxy_url
-    agent.info.id = uuid.UUID("a3a268ce-e2db-4abd-ba01-f69057e6e825")
-    agent.info.run_id = uuid.UUID("40159395-641f-4b4c-82b2-0503e0dff67c")
-    agent.private_key_bytes = _TEST_PRIVATE_KEY_BYTES
-    agent.certificate_b64 = _TEST_CERT_B64
-    return agent
+def _make_pki_run(proxy_url: str = "http://proxy:8080"):
+    """Build a MagicMock Run with an Identity that satisfies the PKI contract."""
+    identity = MagicMock()
+    identity.agent_id = "test-agent"
+    identity.proxy_url = proxy_url
+    identity.db_agent_id = "a3a268ce-e2db-4abd-ba01-f69057e6e825"
+    identity.private_key_bytes = _TEST_PRIVATE_KEY_BYTES
+    identity.certificate_b64 = _TEST_CERT_B64
+    identity.security_policy = "hard"
+
+    run = MagicMock()
+    run.identity = identity
+    run.run_id = "40159395-641f-4b4c-82b2-0503e0dff67c"
+    run.effective_security_policy = "hard"
+    return run
 
 
 class TestRunVaultProviderTransport:
     def test_raises_if_no_agent_in_context(self):
-        transport = RunVaultProviderTransport(provider="openai")
+        run = _make_pki_run()
+        transport = RunVaultProviderTransport(
+            provider="openai", bound_identity=run.identity,
+        )
         req = httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
-        with pytest.raises(RuntimeError, match="No active RunVault agent"):
+        with pytest.raises(NoActiveRunError, match="No active RunVault run"):
             transport.handle_request(req)
 
     def test_rewrites_url_and_injects_pki_headers(self):
-        transport = RunVaultProviderTransport(provider="openai")
-        agent = _make_pki_agent()
+        run = _make_pki_run()
+        transport = RunVaultProviderTransport(
+            provider="openai", bound_identity=run.identity,
+        )
         mock_response = make_httpx_response(200, {"choices": []})
 
         with patch.object(transport._inner, "handle_request", return_value=mock_response) as mock_inner:
-            token = _current_agent.set(agent)
+            token = _CURRENT_RUN.set(run)
             try:
                 result = transport.handle_request(
                     httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
                 )
             finally:
-                _current_agent.reset(token)
+                _CURRENT_RUN.reset(token)
 
         sent = mock_inner.call_args[0][0]
         assert str(sent.url) == "http://proxy:8080/openai/v1/chat/completions"
@@ -278,56 +290,65 @@ class TestRunVaultProviderTransport:
         assert result.status_code == 200
 
     def test_raises_runtime_error_if_agent_missing_pki(self):
-        transport = RunVaultProviderTransport(provider="openai")
-        agent = _make_pki_agent()
-        agent.private_key_bytes = None
-        agent.certificate_b64 = None
+        run = _make_pki_run()
+        run.identity.private_key_bytes = None
+        run.identity.certificate_b64 = None
+        transport = RunVaultProviderTransport(
+            provider="openai", bound_identity=run.identity,
+        )
 
-        token = _current_agent.set(agent)
+        token = _CURRENT_RUN.set(run)
         try:
             with pytest.raises(RuntimeError, match="PKI credentials"):
                 transport.handle_request(
                     httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
                 )
         finally:
-            _current_agent.reset(token)
+            _CURRENT_RUN.reset(token)
 
     def test_raises_typed_error_on_4xx(self):
-        transport = RunVaultProviderTransport(provider="openai")
-        agent = _make_pki_agent()
+        run = _make_pki_run()
+        transport = RunVaultProviderTransport(
+            provider="openai", bound_identity=run.identity,
+        )
         error_resp = make_httpx_response(404, {"error": {"message": "Model not found"}})
 
         with patch.object(transport._inner, "handle_request", return_value=error_resp):
-            token = _current_agent.set(agent)
+            token = _CURRENT_RUN.set(run)
             try:
                 with pytest.raises(LLMProviderError) as exc_info:
                     transport.handle_request(
                         httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
                     )
             finally:
-                _current_agent.reset(token)
+                _CURRENT_RUN.reset(token)
         assert exc_info.value.provider == "openai"
 
     def test_raises_budget_exceeded_on_402(self):
-        transport = RunVaultProviderTransport(provider="openai")
-        agent = _make_pki_agent()
+        run = _make_pki_run()
+        transport = RunVaultProviderTransport(
+            provider="openai", bound_identity=run.identity,
+        )
         error_resp = make_httpx_response(402, {"code": "BUDGET_CAP_REACHED", "detail": "Cap", "user_string": "Over budget"})
 
         with patch.object(transport._inner, "handle_request", return_value=error_resp):
-            token = _current_agent.set(agent)
+            token = _CURRENT_RUN.set(run)
             try:
                 with pytest.raises(BudgetExceededError):
                     transport.handle_request(
                         httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
                     )
             finally:
-                _current_agent.reset(token)
+                _CURRENT_RUN.reset(token)
 
     def test_refreshes_credentials_and_retries_on_cert_revoked(self):
-        """On 401 CERTIFICATE_REVOKED, transport calls agent.refresh_credentials()
-        once and retries. The second attempt is what the caller sees."""
-        transport = RunVaultProviderTransport(provider="openai")
-        agent = _make_pki_agent()
+        """On 401 CERTIFICATE_REVOKED, transport calls
+        bound_identity.refresh_credentials() once and retries. The second
+        attempt is what the caller sees."""
+        run = _make_pki_run()
+        transport = RunVaultProviderTransport(
+            provider="openai", bound_identity=run.identity,
+        )
 
         revoked_resp = make_httpx_response(
             401, {"code": "CERTIFICATE_REVOKED", "detail": "revoked", "user_string": "Cert rotated"}
@@ -337,15 +358,15 @@ class TestRunVaultProviderTransport:
         with patch.object(
             transport._inner, "handle_request", side_effect=[revoked_resp, success_resp]
         ) as mock_inner:
-            token = _current_agent.set(agent)
+            token = _CURRENT_RUN.set(run)
             try:
                 result = transport.handle_request(
                     httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
                 )
             finally:
-                _current_agent.reset(token)
+                _CURRENT_RUN.reset(token)
 
-        agent.refresh_credentials.assert_called_once()
+        run.identity.refresh_credentials.assert_called_once()
         assert mock_inner.call_count == 2
         assert result.status_code == 200
 
@@ -356,27 +377,32 @@ class TestRunVaultProviderTransport:
 
 class TestRunVaultProviderAsyncTransport:
     async def test_raises_if_no_agent_in_context(self):
-        transport = RunVaultProviderAsyncTransport(provider="openai")
+        run = _make_pki_run()
+        transport = RunVaultProviderAsyncTransport(
+            provider="openai", bound_identity=run.identity,
+        )
         req = httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
-        with pytest.raises(RuntimeError, match="No active RunVault agent"):
+        with pytest.raises(NoActiveRunError, match="No active RunVault run"):
             await transport.handle_async_request(req)
 
     async def test_rewrites_url_and_injects_pki_headers(self):
-        transport = RunVaultProviderAsyncTransport(provider="openai")
-        agent = _make_pki_agent()
+        run = _make_pki_run()
+        transport = RunVaultProviderAsyncTransport(
+            provider="openai", bound_identity=run.identity,
+        )
         mock_response = make_httpx_response(200, {"choices": []})
 
         with patch.object(
             transport._inner, "handle_async_request",
             new=AsyncMock(return_value=mock_response),
         ) as mock_inner:
-            token = _current_agent.set(agent)
+            token = _CURRENT_RUN.set(run)
             try:
                 result = await transport.handle_async_request(
                     httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
                 )
             finally:
-                _current_agent.reset(token)
+                _CURRENT_RUN.reset(token)
 
         sent = mock_inner.call_args[0][0]
         assert str(sent.url) == "http://proxy:8080/openai/v1/chat/completions"
@@ -386,19 +412,21 @@ class TestRunVaultProviderAsyncTransport:
         assert result.status_code == 200
 
     async def test_raises_typed_error_on_4xx(self):
-        transport = RunVaultProviderAsyncTransport(provider="openai")
-        agent = _make_pki_agent()
+        run = _make_pki_run()
+        transport = RunVaultProviderAsyncTransport(
+            provider="openai", bound_identity=run.identity,
+        )
         error_resp = make_httpx_response(401, {"code": "INVALID_TOKEN", "detail": "Bad token", "user_string": "Invalid"})
 
         with patch.object(
             transport._inner, "handle_async_request",
             new=AsyncMock(return_value=error_resp),
         ):
-            token = _current_agent.set(agent)
+            token = _CURRENT_RUN.set(run)
             try:
                 with pytest.raises(TokenExpiredError):
                     await transport.handle_async_request(
                         httpx.Request("POST", f"{PLACEHOLDER_BASE}/openai/v1/chat/completions")
                     )
             finally:
-                _current_agent.reset(token)
+                _CURRENT_RUN.reset(token)
