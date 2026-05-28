@@ -21,7 +21,7 @@ User subclasses of any supported class are picked up through an MRO walk — you
 from runvault import RunVault
 from langchain_openai import ChatOpenAI
 
-rv = RunVault(api_key="rv_live_...", be_url="...")
+rv = RunVault(api_key="rv_live_...")
 identity = rv.register_agent(agent_id="research-v1", name="Research Agent")
 
 RVChat = identity.build_llm(ChatOpenAI)

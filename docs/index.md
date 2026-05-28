@@ -50,7 +50,7 @@ Requires **Python 3.9+**. Full matrix on [Installation](getting-started/installa
 from runvault import RunVault
 from langchain_openai import ChatOpenAI
 
-rv = RunVault(api_key="rv_live_...", be_url="https://your-runvault-backend")
+rv = RunVault(api_key="rv_live_...")
 
 identity = rv.register_agent(agent_id="research-v1", name="Research Agent")
 RVChat = identity.build_llm(ChatOpenAI)

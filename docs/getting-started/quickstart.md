@@ -10,16 +10,13 @@ pip install "runvault[langchain-openai]"
 
 ## 1. Create the SDK client
 
-`RunVault(...)` holds your project API key and the backend URL. Construction does not touch the network.
+`RunVault(...)` holds your project API key; the production backend URL is baked into the SDK. Construction does not touch the network.
 
 ```python
 import os
 from runvault import RunVault
 
-rv = RunVault(
-    api_key=os.environ["RUNVAULT_API_KEY"],
-    be_url=os.environ["RUNVAULT_BE_URL"],
-)
+rv = RunVault(api_key=os.environ["RUNVAULT_API_KEY"])
 ```
 
 ## 2. Register an agent

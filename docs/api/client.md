@@ -5,7 +5,7 @@
 ```python
 from runvault import RunVault
 
-rv = RunVault(api_key="rv_live_...", be_url="https://your-runvault-backend")
+rv = RunVault(api_key="rv_live_...")
 ```
 
 Construction does no I/O. The first network call happens on `register_agent(...)`.
@@ -15,7 +15,7 @@ Construction does no I/O. The first network call happens on `register_agent(...)
 ```python
 RunVault(
     api_key: str,
-    be_url: str,
+    be_url: str | None = None,
     timeout: int = 10,
 )
 ```
@@ -23,7 +23,7 @@ RunVault(
 | Parameter | Required | Notes |
 |---|---|---|
 | `api_key` | yes | Project API key (`rv_live_…`). Used only at registration. |
-| `be_url` | yes | Backend base URL. |
+| `be_url` | no | Override the backend base URL. Defaults to the `RUNVAULT_BE_URL` environment variable if set, otherwise the production endpoint baked into the SDK. Most users should leave this unset. |
 | `timeout` | no | Seconds. Applies to connect / write / pool phases of backend calls. Read timeout is unbounded. |
 
 ## `register_agent(...)`

@@ -88,10 +88,7 @@ Requires **Python 3.9+**.
 from runvault import RunVault
 from langchain_openai import ChatOpenAI
 
-rv = RunVault(
-    api_key="rv_live_...",                # your RunVault project API key
-    be_url="https://your-runvault-backend",
-)
+rv = RunVault(api_key="rv_live_...")      # your RunVault project API key
 
 # 1. Register the agent. Idempotent — same agent_id returns the same
 #    identity. First call provisions an Ed25519 keypair + CA-signed cert.
@@ -205,7 +202,7 @@ RunVault uses a two-step PKI flow rather than long-lived bearer tokens.
 |---|---|---|
 | `RUNVAULT_API_KEY` | yes (recommended) | Your project API key. Pass to `RunVault(api_key=…)` or read from env. |
 | `RV_CA_PUBLIC_KEY` | recommended | Base64-encoded Ed25519 RunVault CA public key. When set, the SDK verifies the CA signature on certificates returned by registration. When absent the SDK warns and proceeds — fine for dev, never for production. |
-| `BE_URL` / `RUNVAULT_BE_URL` | no | Backend base URL. Pass to `RunVault(be_url=…)` or read from env. |
+| `RUNVAULT_BE_URL` | no | Override the backend base URL. Defaults to the production endpoint baked into the SDK; set this (or pass `RunVault(be_url=…)`) only when targeting a staging or self-hosted backend. |
 
 The `RV_CA_PUBLIC_KEY` value is published by your RunVault deployment.
 Self-hosted operators generate it once with `scripts/generate_rv_keys.sh`

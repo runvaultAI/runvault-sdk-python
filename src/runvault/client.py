@@ -4,7 +4,7 @@ Usage:
 
     from runvault import RunVault
 
-    rv = RunVault(api_key="rv_live_...", be_url="https://your-backend")
+    rv = RunVault(api_key="rv_live_...")
 
     # 1. Register the agent — provisions cert + private key once.
     identity = rv.register_agent(
@@ -24,6 +24,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import os
 
 from typing import Literal
 
@@ -32,6 +33,8 @@ from runvault.http.backend import BackendClient
 from runvault.identity import Identity
 
 log = logging.getLogger(__name__)
+
+DEFAULT_BE_URL = "https://api.runvault.to"
 
 
 class RunVault:
@@ -43,18 +46,22 @@ class RunVault:
 
     Args:
         api_key: Active RunVault project API key (``rv_live_…``).
-        be_url:  Base URL of the RunVault backend.
+        be_url:  Override the backend base URL. Defaults to the
+                 ``RUNVAULT_BE_URL`` environment variable if set,
+                 otherwise the production endpoint. Most users should
+                 leave this unset.
         timeout: HTTP request timeout in seconds for backend calls.
     """
 
     def __init__(
         self,
         api_key: str,
-        be_url: str,
+        be_url: str | None = None,
         timeout: int = 10,
     ) -> None:
         self._api_key = api_key
-        self._http = BackendClient(be_url=be_url, timeout=timeout)
+        resolved_be_url = be_url or os.environ.get("RUNVAULT_BE_URL") or DEFAULT_BE_URL
+        self._http = BackendClient(be_url=resolved_be_url, timeout=timeout)
 
     def register_agent(
         self,

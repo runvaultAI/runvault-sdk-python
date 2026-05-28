@@ -1,6 +1,6 @@
 # Configuration
 
-The SDK reads no environment variables on your behalf. Every option is passed explicitly to `RunVault(...)` or `rv.register_agent(...)`. The conventional environment-variable names below are what most deployments use.
+The SDK reads `RUNVAULT_BE_URL` and `RV_CA_PUBLIC_KEY` from the environment when present. All other options are passed explicitly to `RunVault(...)` or `rv.register_agent(...)`.
 
 ## RunVault client
 
@@ -9,7 +9,6 @@ from runvault import RunVault
 
 rv = RunVault(
     api_key=os.environ["RUNVAULT_API_KEY"],
-    be_url=os.environ["RUNVAULT_BE_URL"],
     timeout=10,                     # optional; seconds
 )
 ```
@@ -17,7 +16,7 @@ rv = RunVault(
 | Parameter | Required | Default | Notes |
 |---|---|---|---|
 | `api_key` | yes | — | Project API key (`rv_live_…`). Used only at registration. |
-| `be_url` | yes | — | Backend base URL. |
+| `be_url` | no | `RUNVAULT_BE_URL` env, else baked-in production URL | Override the backend base URL. Only set for staging or self-hosted deployments. |
 | `timeout` | no | `10` | Applies to connect / write / pool phases of backend calls. Read timeout is unbounded. |
 
 ## `register_agent`
@@ -51,11 +50,9 @@ with identity.run(security_policy="soft"):
 
 ## Environment variables
 
-The SDK does not read these directly, but most deployments use these names:
-
 | Variable | Purpose |
 |---|---|
-| `RUNVAULT_API_KEY` | The value passed as `api_key`. |
-| `RUNVAULT_BE_URL` | The value passed as `be_url`. |
+| `RUNVAULT_API_KEY` | Convention only — the SDK does not read this directly. Pass the value as `api_key`. |
+| `RUNVAULT_BE_URL` | **Read directly by the SDK** when no `be_url` argument is supplied. Override the baked-in production backend URL for staging or self-hosted deployments. |
 | `RV_CA_PUBLIC_KEY` | **Read directly by the SDK.** Base64-encoded Ed25519 RunVault CA public key. When set, every certificate is verified against this key on receipt. Strongly recommended in production. |
 

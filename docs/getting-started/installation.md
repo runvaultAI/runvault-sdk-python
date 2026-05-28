@@ -5,9 +5,10 @@ The base `runvault` package is small. LLM provider and framework support are opt
 ## Requirements
 
 - **Python 3.9 or newer** (tested on 3.9 – 3.13).
-- A reachable **RunVault backend** — the `be_url` you pass to `RunVault(...)`.
 - A **RunVault project API key** (`rv_live_…`) issued from your dashboard.
 - *(Recommended for production)* `RV_CA_PUBLIC_KEY` environment variable set to your deployment's RunVault CA public key. When present, the SDK verifies the CA signature on every certificate it receives.
+
+The production backend URL (`https://api.runvault.to`) is baked into the SDK — no configuration required for normal use.
 
 ## Install the SDK
 
@@ -50,22 +51,19 @@ Expected output:
 
 ## Environment variables
 
-The SDK does not auto-read environment variables. You pass values to `RunVault(...)` explicitly. The conventional names below are what most deployments use:
+The SDK reads `RUNVAULT_BE_URL` automatically when no `be_url` argument is passed. All other variables are conventions — you pass the value to `RunVault(...)` explicitly.
 
 | Variable | Required | Purpose |
 |---|---|---|
 | `RUNVAULT_API_KEY` | recommended | Your project API key (`rv_live_…`). Pass to `RunVault(api_key=…)`. |
-| `RUNVAULT_BE_URL`  | recommended | Backend base URL. Pass to `RunVault(be_url=…)`. |
+| `RUNVAULT_BE_URL`  | no | Override the baked-in production backend URL. Read automatically when set; useful for staging or self-hosted deployments. |
 | `RV_CA_PUBLIC_KEY` | recommended in production | Base64-encoded Ed25519 RunVault CA public key. When set, the SDK verifies every certificate's CA signature. Absent ⇒ the SDK logs a warning and proceeds. |
 
 ```python
 import os
 from runvault import RunVault
 
-rv = RunVault(
-    api_key=os.environ["RUNVAULT_API_KEY"],
-    be_url=os.environ["RUNVAULT_BE_URL"],
-)
+rv = RunVault(api_key=os.environ["RUNVAULT_API_KEY"])
 ```
 
 ## Construct a RunVault client
@@ -77,7 +75,6 @@ from runvault import RunVault
 
 rv = RunVault(
     api_key="rv_live_...",
-    be_url="https://your-runvault-backend",
     timeout=10,   # optional, seconds — applies to connect / write / pool
 )
 ```

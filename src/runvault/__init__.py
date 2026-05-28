@@ -4,7 +4,7 @@ Public API:
 
     from runvault import RunVault, current_run
 
-    rv = RunVault(api_key="rv_live_...", be_url="https://your-backend")
+    rv = RunVault(api_key="rv_live_...")
     identity = rv.register_agent(agent_id="research-v1", name="Research Agent")
 
     from langchain_openai import ChatOpenAI

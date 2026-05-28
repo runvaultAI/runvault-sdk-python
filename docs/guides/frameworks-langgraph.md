@@ -15,7 +15,7 @@ from langgraph.graph import StateGraph, END
 
 from runvault import RunVault
 
-rv = RunVault(api_key="rv_live_...", be_url="...")
+rv = RunVault(api_key="rv_live_...")
 identity = rv.register_agent(agent_id="research-v1", name="Research")
 
 RVChat = identity.build_llm(ChatOpenAI)
