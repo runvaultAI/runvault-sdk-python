@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Pre-1.0 minor version bumps may contain breaking changes.
 
+## [0.3.1] — 2026-05-29
+
+### Changed
+
+- `RunVault` client now defaults `backend_url` to
+  `https://app.runvault.to` when none is provided, so the SDK works
+  out of the box without explicit configuration.
+
 ## [0.3.0] — 2026-05-18
 
 ### Added

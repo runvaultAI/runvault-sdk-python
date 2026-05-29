@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "runvault"
-version = "0.3.0"
+version = "0.3.1"
 description = "Financial identity infrastructure for AI agents — Python SDK"
 readme = "README.md"
 # PEP 639 license metadata. The SPDX expression renders as a clean
