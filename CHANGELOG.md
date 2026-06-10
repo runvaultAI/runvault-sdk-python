@@ -10,9 +10,11 @@ Pre-1.0 minor version bumps may contain breaking changes.
 
 ### Changed
 
-- `RunVault` client now defaults `backend_url` to
-  `https://app.runvault.to` when none is provided, so the SDK works
-  out of the box without explicit configuration.
+- `RunVault` now defaults `be_url` to the production backend
+  (`https://api.runvault.to`) when none is provided, falling back to
+  the `RUNVAULT_BE_URL` environment variable first. The SDK works out
+  of the box without explicit configuration; pass `be_url=…` or set
+  `RUNVAULT_BE_URL` only to target a staging or self-hosted backend.
 
 ## [0.3.0] — 2026-05-18
 
